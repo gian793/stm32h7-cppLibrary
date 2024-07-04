@@ -42,11 +42,27 @@ public:
             timeoutMs { cmdTimeoutMs },
             periodMs  { cmdPeriodMs },
             delayMs   { cmdDelayMs },
-            token     { ++nextToken },
             done_Cb   { done },
             reply_Cb  { reply },
             timeout_Cb{ timeout }  {}
 
+    static bool priorityGreater(const Cmd &lCmd, const Cmd &rCmd) 
+    {
+        return lCmd.priority > rCmd.priority;
+    }
+
+    static bool prioritySmaller(const Cmd &lCmd, const Cmd &rCmd) 
+    {
+        return lCmd.priority < rCmd.priority;
+    }
+
+    static bool priorityEqual(const Cmd &lCmd, const Cmd &rCmd) 
+    {
+        return lCmd.priority == rCmd.priority;
+    }
+
+    void setToken( uint32_t tokenValue ) { token = tokenValue; }
+    
     Cmd& operator=(const Cmd& other)
     {
         if( this != &other )
@@ -76,7 +92,7 @@ private:
 
     CmdType   type;
 
-    CmdType   replyType;      /* Which type of command is expected as reply. */
+    CmdType   replyType;        /* Which type of command is expected as reply. */
 
 
     PrioLevel priority;
@@ -97,13 +113,41 @@ private:
     pCallback timeout_Cb;
 
 
-    CmdState  state = CmdState::Idle;
+    CmdState  state{CmdState::Idle};
 
-    uint32_t nextToken = 0;
+    uint32_t  token{0};        /* Each issued command has an unique token assigned to it. It is used in the reply as well. */
 
-    uint32_t  token = 0;    /* Each issued command has an unique token assigned to it. It is replicated in the reply as well. */
+    bool      suspend{false};  /* Used to suspend (periodic) command execution. */
 
-    bool suspend = false;   /* Used to suspend (periodic) command execution. */
+    /*
+    CmdType   type{CmdType::noCmd};
+
+    CmdType   replyType{CmdType::noCmd};      
+    
+
+    PrioLevel priority{PrioLevel::low};
+
+    uint32_t  retryNr{cmdDefaultRetryNr};
+
+    uint32_t  timeoutMs{cmdDefaultTimeoutMs};
+
+    uint32_t  periodMs{cmdDefaultPeriodMs};
+
+    uint32_t  delayMs{cmdDefaultDelayMs};
+
+
+    pCallback done_Cb{nullptr};
+
+    pCallback reply_Cb{nullptr};
+
+    pCallback timeout_Cb{nullptr};
+
+
+    CmdState  state{CmdState::Idle};
+
+    uint32_t  token{0};        
+
+    bool suspend{false};       */
 
 };
 

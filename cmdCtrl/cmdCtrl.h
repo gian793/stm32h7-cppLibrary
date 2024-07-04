@@ -13,15 +13,13 @@ class cmdCtrl
 {
 public:
 
-    cmdCtrl(): txCnt(0), rxCnt(0) {
-        std::random_device rd;  
-        std::mt19937 gen(rd());     /* Standard mersenne_twister_engine seeded with rd(). */
-        std::uniform_int_distribution<uint32_t> dist(0, std::numeric_limits<uint32_t>::max());
-    }
+    cmdCtrl(): txCnt{0}, rxCnt{0}, nextToken{0} {}
 
     void Manager( void );
 
     void Tx( Cmd &xCmd );
+
+    //void RemoveCmd( uint32_t token );
 
 private:
     std::array<Cmd, cmdBufferSize> txBuffer;    /* Out-going commands. */
@@ -31,6 +29,8 @@ private:
     uint32_t txCnt;
 
     uint32_t rxCnt;
+
+    uint32_t nextToken;
 };
 
 /*---------------------------------------------------------------------------*/

@@ -62,6 +62,8 @@ public:
     }
 
     void setToken( uint32_t tokenValue ) { token = tokenValue; }
+
+    uint32_t getToken( void ) { return token; } const
     
     Cmd& operator=(const Cmd& other)
     {

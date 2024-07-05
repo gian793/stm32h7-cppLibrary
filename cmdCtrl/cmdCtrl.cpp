@@ -23,19 +23,46 @@ void cmdCtrl::Manager( void )
 
 }
 
-void cmdCtrl::Tx( Cmd &xCmd )
+/**
+  * @brief  Transmit a command.
+  * @param  Command to be transmitted.
+  * @retval True if command added successfully.
+  */
+
+bool cmdCtrl::Tx( Cmd &xCmd )
 {
-    auto elemNr = txBuffer.size();
+    bool isTxCmdAdded = false;
 
-    xCmd.setToken( ++nextToken );
+    /* TODO Add mutex */
 
-    if ( elemNr < txBuffer.max_size() ) 
-    {        
-        
-        //uint32_t cmdToken = ++token;
+    if( txCnt < txBuffer.max_size() ) 
+    {
+        xCmd.setToken( ++nextToken );
 
-        txBuffer[ elemNr ] = xCmd; // Add the new element at the back
+        txBuffer[ txCnt++ ] = xCmd; // Add the new element at the back
 
         std::sort( begin(txBuffer), end(txBuffer), Cmd::priorityGreater );
-    }
+
+        isTxCmdAdded = true;
+    }      
+
+    return isTxCmdAdded;
+}
+
+bool cmdCtrl::Rx( Cmd &xCmd )
+{
+    bool isRxCmdAdded = false;
+
+    /* TODO Add mutex */
+
+    if( rxCnt < rxBuffer.max_size() ) 
+    {
+        txBuffer[ rxCnt++ ] = xCmd; // Add the new element at the back
+
+        std::sort( begin(rxBuffer), end(rxBuffer), Cmd::priorityGreater );
+
+        isRxCmdAdded = true;
+    }        
+
+    return isRxCmdAdded;
 }

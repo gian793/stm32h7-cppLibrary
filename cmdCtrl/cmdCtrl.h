@@ -13,13 +13,19 @@ class cmdCtrl
 {
 public:
 
-    cmdCtrl(): txCnt{0}, rxCnt{0}, nextToken{0} {}
+    explicit cmdCtrl(): txCnt{0}, rxCnt{0}, nextToken{0} {}
 
     void Manager( void );
 
-    void Tx( Cmd &xCmd );
+    bool Tx( Cmd &xCmd );
+
+    bool Rx( Cmd &xCmd );
 
     //void RemoveCmd( uint32_t token );
+
+    uint32_t getTxCnt( void ) { return txCnt; }
+
+    uint32_t getRxCnt( void ) { return rxCnt; }
 
 private:
     std::array<Cmd, cmdBufferSize> txBuffer;    /* Out-going commands. */

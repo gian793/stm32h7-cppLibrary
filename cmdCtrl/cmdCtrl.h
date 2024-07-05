@@ -36,10 +36,10 @@ private:
     std::array<Cmd, cmdBufferSize> rxBuffer;    /* In-coming commands or replies to out-going commands. */
 
     int32_t  txNextIdx = -1;                    /* Next cmd to send based on priority. -1 means invalid. */
-    uint32_t txCnt     = 0;                     /* Number of cmds to send. */
+    uint32_t txCnt     =  0;                    /* Number of cmds to send. */
 
     int32_t  rxNextIdx = -1;
-    uint32_t rxCnt     = 0;
+    uint32_t rxCnt     =  0;
 
     uint32_t nextToken;
 

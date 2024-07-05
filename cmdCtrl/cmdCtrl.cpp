@@ -39,8 +39,9 @@ bool cmdCtrl::Tx( Cmd &xCmd )
     {
         xCmd.setToken( ++nextToken );
 
-        txBuffer[ txCnt++ ] = xCmd; // Add the new element at the back
+        txBuffer[ txCnt++ ] = xCmd;
 
+        /* Higer priority cmds first. */
         std::sort( begin(txBuffer), end(txBuffer), Cmd::priorityGreater );
 
         isTxCmdAdded = true;
@@ -57,8 +58,9 @@ bool cmdCtrl::Rx( Cmd &xCmd )
 
     if( rxCnt < rxBuffer.max_size() ) 
     {
-        txBuffer[ rxCnt++ ] = xCmd; // Add the new element at the back
+        txBuffer[ rxCnt++ ] = xCmd; 
 
+        /* Higer priority cmds first. */
         std::sort( begin(rxBuffer), end(rxBuffer), Cmd::priorityGreater );
 
         isRxCmdAdded = true;

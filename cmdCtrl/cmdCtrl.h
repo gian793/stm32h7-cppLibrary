@@ -32,7 +32,6 @@ public:
 
 private:
     std::array<Cmd, cmdBufferSize> txBuffer;    /* Out-going commands. */
-
     std::array<Cmd, cmdBufferSize> rxBuffer;    /* In-coming commands or replies to out-going commands. */
 
     int32_t  txNextIdx = -1;                    /* Next cmd to send based on priority. -1 means invalid. */

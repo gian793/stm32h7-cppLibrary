@@ -1,6 +1,6 @@
 /**
  * \file            cmdCtrl.cpp
- * \brief           Commands controller. Sends and receives commands asynchronously.
+ * \brief           Controller for sending and receiving cmmands asynchronously.
  * \author          giancarlo.marcolin@gmail.com
  */
 
@@ -12,16 +12,29 @@
 #include "cmdCtrl.h"
 
 
-/* bool cmdCtrl::CmpPriorityGreater( const Cmd &a, const Cmd &b )
-{
-    return ( a.priority > b.priority );
-}  */
+
+/**
+  * @brief  Commands handler. Must be invoked periodically.
+  * @param  None.
+  * @retval None.
+  */
 
 void cmdCtrl::Manager( void )
 {
+    /* Commands Tx. */
+    if( txCnt > 0 )
+    {
 
+    }
 
+    /* Commands Rx. */
+    if( rxCnt > 0 )
+    {
+        
+    }
 }
+
+
 
 /**
   * @brief  Transmit a command.
@@ -49,6 +62,14 @@ bool cmdCtrl::Tx( Cmd &xCmd )
 
     return isTxCmdAdded;
 }
+
+
+
+/**
+  * @brief  Transmit a command.
+  * @param  Command to be transmitted.
+  * @retval True if command added successfully.
+  */
 
 bool cmdCtrl::Rx( Cmd &xCmd )
 {

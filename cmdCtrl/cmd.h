@@ -88,6 +88,8 @@ public:
                         reply_Cb   = xReply_Cb;
                         timeout_Cb = xTimeout_Cb;
                     }
+        
+    void reset( void ) { type = CmdType::noCmd; } 
 
 
 private:

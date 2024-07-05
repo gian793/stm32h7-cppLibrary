@@ -13,7 +13,10 @@ class cmdCtrl
 {
 public:
 
-    explicit cmdCtrl(): txCnt{0}, rxCnt{0}, nextToken{0} {}
+    cmdCtrl() { 
+        resetTxBuf();
+        resetRxBuf();
+    }
 
     void Manager( void );
 
@@ -32,11 +35,29 @@ private:
 
     std::array<Cmd, cmdBufferSize> rxBuffer;    /* In-coming commands or replies to out-going commands. */
 
-    uint32_t txCnt;
+    int32_t  txNextIndex = -1;                  /* Next cmd to send based on priority. -1 means invalid. */
+    uint32_t txCnt       = 0;                   /* Number of cmds to send. */
 
-    uint32_t rxCnt;
+    int32_t  rxNextIndex = -1;
+    uint32_t rxCnt       = 0;
 
     uint32_t nextToken;
+
+    void resetTxBuf( void )
+    {
+        for( Cmd &c: txBuffer )
+        {
+            c.reset();
+        }
+    }
+
+    void resetRxBuf( void )
+    {
+        for( Cmd &c: rxBuffer )
+        {
+            c.reset();
+        }
+    }
 };
 
 /*---------------------------------------------------------------------------*/

@@ -33,7 +33,7 @@ bool cmdCtrl::Tx( Cmd &xCmd )
 {
     bool isTxCmdAdded = false;
 
-    /* TODO Add mutex */
+    /* TODO Add mutex for exclusive access to shared data. */
 
     if( txCnt < txBuffer.max_size() ) 
     {
@@ -53,7 +53,7 @@ bool cmdCtrl::Rx( Cmd &xCmd )
 {
     bool isRxCmdAdded = false;
 
-    /* TODO Add mutex */
+    /* TODO Add mutex for exclusive access to shared data. */
 
     if( rxCnt < rxBuffer.max_size() ) 
     {

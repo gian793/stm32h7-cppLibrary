@@ -29,7 +29,7 @@ TEST_GROUP( cmdCtrl )
     }
 };
 
-TEST( cmdCtrl, cmdPriority)
+TEST( cmdCtrl, cmdPriority )
 {
     Cmd cmd1;   /* Default low priority. */
     Cmd cmd2;
@@ -49,4 +49,28 @@ TEST( cmdCtrl, cmdPriority)
 
     CHECK_TRUE( Cmd::priorityGreater( cmd3, cmd2 ) );
     CHECK_TRUE( Cmd::prioritySmaller( cmd1, cmd3 ) );
+}
+
+TEST( cmdCtrl, Init )
+{
+    cmdCtrl testCtrl;
+
+    CHECK_EQUAL( 0, testCtrl.getTxCnt() );
+    CHECK_EQUAL( 0, testCtrl.getRxCnt() );
+}
+
+TEST( cmdCtrl, cmdCnt )
+{
+    cmdCtrl testCtrl;
+    Cmd cmd; 
+
+    testCtrl.Tx( cmd );
+    testCtrl.Tx( cmd );
+    testCtrl.Tx( cmd );
+
+    testCtrl.Rx( cmd );
+    testCtrl.Rx( cmd );
+
+    CHECK_EQUAL( 3, testCtrl.getTxCnt() );
+    CHECK_EQUAL( 2, testCtrl.getRxCnt() );
 }

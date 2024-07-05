@@ -41,7 +41,7 @@ bool cmdCtrl::Tx( Cmd &xCmd )
 
         txBuffer[ txCnt++ ] = xCmd;
 
-        /* Higer priority cmds first. */
+        /* High priority cmds first. */
         std::sort( begin(txBuffer), end(txBuffer), Cmd::priorityGreater );
 
         isTxCmdAdded = true;
@@ -60,7 +60,7 @@ bool cmdCtrl::Rx( Cmd &xCmd )
     {
         txBuffer[ rxCnt++ ] = xCmd; 
 
-        /* Higer priority cmds first. */
+        /* High priority cmds first. */
         std::sort( begin(rxBuffer), end(rxBuffer), Cmd::priorityGreater );
 
         isRxCmdAdded = true;

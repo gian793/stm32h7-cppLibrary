@@ -46,40 +46,15 @@ public:
             reply_Cb  { reply },
             timeout_Cb{ timeout }  {}
 
-    static bool priorityGreater(const Cmd &lCmd, const Cmd &rCmd) 
-    {
-        return lCmd.priority > rCmd.priority;
-    }
+    static bool priorityGreaterEqual( const Cmd &lCmd, const Cmd &rCmd ) { return lCmd.priority >= rCmd.priority; } const
 
-    static bool prioritySmaller(const Cmd &lCmd, const Cmd &rCmd) 
-    {
-        return lCmd.priority < rCmd.priority;
-    }
+    static bool prioritySmallerEqual( const Cmd &lCmd, const Cmd &rCmd ) { return lCmd.priority <= rCmd.priority; } const
 
-    static bool priorityEqual(const Cmd &lCmd, const Cmd &rCmd) 
-    {
-        return lCmd.priority == rCmd.priority;
-    }
-
-    void setToken( uint32_t tokenValue ) { token = tokenValue; }
+    static bool priorityEqual( const Cmd &lCmd, const Cmd &rCmd ) { return lCmd.priority == rCmd.priority; } const
 
     uint32_t getToken( void ) { return token; } const
-    
-    Cmd& operator=(const Cmd& other)
-    {
-        if( this != &other )
-        {
-//            Cmd tmp( other ); /* RAII. */
-//            tmp.swap(*this);
-        }
 
-        return *this;
-    }
-    
-//    void swap( Cmd& s) noexcept
-//    {
-//        std::swap(this, s);
-//    }
+    void setToken( uint32_t tokenValue ) { token = tokenValue; }
 
     void SetCallbacks(  pCallback xCmdDone_Cb = nullptr,
                         pCallback xReply_Cb   = nullptr,
@@ -89,10 +64,10 @@ public:
                         timeout_Cb = xTimeout_Cb;
                     }
         
-    void reset( void ) { type = CmdType::noCmd; } 
+    void reset( void ) { type = CmdType::noCmd; }
 
 
-private:
+//private:
 
     CmdType   type;
 

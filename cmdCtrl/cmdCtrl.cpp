@@ -39,7 +39,7 @@ void cmdCtrl::Manager( void )
 /**
   * @brief  Transmit a command.
   * @param  Command to be transmitted.
-  * @retval True if command added successfully.
+  * @retval True if command added successfully to tx buffer.
   */
 
 bool cmdCtrl::Tx( Cmd &xCmd )
@@ -55,7 +55,7 @@ bool cmdCtrl::Tx( Cmd &xCmd )
         txBuffer[ txCnt++ ] = xCmd;
 
         /* High priority cmds first. */
-        std::sort( begin(txBuffer), end(txBuffer), Cmd::priorityGreater );
+        std::sort( txBuffer.begin(), txBuffer.begin() + txCnt, Cmd::prioritySmallerEqual );
 
         isTxCmdAdded = true;
     }      
@@ -66,9 +66,9 @@ bool cmdCtrl::Tx( Cmd &xCmd )
 
 
 /**
-  * @brief  Transmit a command.
-  * @param  Command to be transmitted.
-  * @retval True if command added successfully.
+  * @brief  Receive a command.
+  * @param  Command received.
+  * @retval True if command added successfully to rx buffer.
   */
 
 bool cmdCtrl::Rx( Cmd &xCmd )
@@ -79,10 +79,10 @@ bool cmdCtrl::Rx( Cmd &xCmd )
 
     if( rxCnt < rxBuffer.max_size() ) 
     {
-        txBuffer[ rxCnt++ ] = xCmd; 
+        rxBuffer[ rxCnt++ ] = xCmd; 
 
         /* High priority cmds first. */
-        std::sort( begin(rxBuffer), end(rxBuffer), Cmd::priorityGreater );
+        std::sort( rxBuffer.begin(), rxBuffer.begin() + rxCnt, Cmd::prioritySmallerEqual );
 
         isRxCmdAdded = true;
     }        

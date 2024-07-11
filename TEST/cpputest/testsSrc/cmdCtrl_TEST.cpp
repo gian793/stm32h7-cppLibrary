@@ -129,6 +129,13 @@ TEST( cmdCtrl, txSort )
     CHECK_TRUE( testCtrl.Tx( t4 ) );
     CHECK_TRUE( testCtrl.Tx( t5 ) );
 
+    CHECK_TRUE( testCtrl.getTxCmd( 0 ).type == CmdType::cmd5 );
+    CHECK_TRUE( testCtrl.getTxCmd( 1 ).type == CmdType::cmd2 );
+    CHECK_TRUE( testCtrl.getTxCmd( 2 ).type == CmdType::cmd3 );
+    CHECK_TRUE( testCtrl.getTxCmd( 3 ).type == CmdType::cmd4 );
+    CHECK_TRUE( testCtrl.getTxCmd( 4 ).type == CmdType::noCmd );
+    CHECK_TRUE( testCtrl.getTxCmd( 5 ).type == CmdType::cmd1 );
+
     CHECK_EQUAL( 1, testCtrl.getTxCmd( 4 ).getToken() );
     CHECK_EQUAL( 2, testCtrl.getTxCmd( 5 ).getToken() );
     CHECK_EQUAL( 3, testCtrl.getTxCmd( 1 ).getToken() );
@@ -168,7 +175,18 @@ TEST( cmdCtrl, rxSort )
     CHECK_TRUE( testCtrl.Rx( r1 ) );
     CHECK_TRUE( testCtrl.Rx( r2 ) );
 
+    CHECK_TRUE( testCtrl.getRxCmd( 0 ).type == CmdType::cmd2 );
+    CHECK_TRUE( testCtrl.getRxCmd( 1 ).type == CmdType::noCmd );
+    CHECK_TRUE( testCtrl.getRxCmd( 2 ).type == CmdType::cmd1 );
+
     CHECK_EQUAL( 1, testCtrl.getRxCmd( 1 ).getToken() );
     CHECK_EQUAL( 2, testCtrl.getRxCmd( 2 ).getToken() );
     CHECK_EQUAL( 3, testCtrl.getRxCmd( 0 ).getToken() );
+}
+
+TEST( cmdCtrl, emptyManager )
+{
+    cmdCtrl testCtrl;
+
+    CHECK_FALSE( testCtrl.Manager() );
 }

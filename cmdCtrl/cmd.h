@@ -59,20 +59,19 @@ public:
     void SetCallbacks(  pCallback xCmdDone_Cb = nullptr,
                         pCallback xReply_Cb   = nullptr,
                         pCallback xTimeout_Cb = nullptr )
-                    {   done_Cb    = xCmdDone_Cb;
+                    {   
+                        done_Cb    = xCmdDone_Cb;
                         reply_Cb   = xReply_Cb;
                         timeout_Cb = xTimeout_Cb;
                     }
         
     void reset( void ) { type = CmdType::noCmd; }
 
-
-private:
-
     CmdType   type;
 
     CmdType   replyType;        /* Which type of command is expected as reply. */
 
+private:
 
     PrioLevel priority;
 
@@ -94,7 +93,7 @@ private:
 
     CmdState  state{CmdState::Idle};
 
-    uint32_t  token{0};        /* Each issued command has an unique token assigned to it. It is used in the reply as well. */
+    uint32_t  token{0};        /* Each issued command has an unique token assigned to it. Replies must have the same token used by the command request issued. */
 
     bool      suspend{false};  /* Used to suspend (periodic) command execution. */
 

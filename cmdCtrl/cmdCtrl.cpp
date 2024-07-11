@@ -11,27 +11,52 @@
 #include "cmd.h"
 #include "cmdCtrl.h"
 
+ 
+/**
+  * @brief  Tx commands handler.
+  * @param  Next tx command.
+  * @retval True if the cmd is transmitted.
+  */
+
+ static bool txCmdManager( Cmd &txCmd )
+ {
+    bool isCmdTx = false;
+
+    if( txCmd.type != CmdType::noCmd )
+    {
+        isCmdTx = true;
+    }
+
+    return isCmdTx;
+ }
 
 
 /**
   * @brief  Commands handler. Must be invoked periodically.
   * @param  None.
-  * @retval None.
+  * @retval True if any command is handled.
   */
 
-void cmdCtrl::Manager( void )
+bool cmdCtrl::Manager( void )
 {
+    bool isCmdHandled = false;
     /* Commands Tx. */
-    if( txCnt > 0 )
-    {
+    auto idx = txCnt;
 
+    while( idx-- > 0 )
+    {
+        isCmdHandled = txCmdManager( txBuffer[ idx ] ); 
     }
 
     /* Commands Rx. */
-    if( rxCnt > 0 )
+    idx = rxCnt;
+    
+    while( idx-- > 0 )
     {
-        
+        //rxCmdManager( idx ); 
     }
+
+    return isCmdHandled;
 }
 
 

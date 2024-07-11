@@ -34,7 +34,7 @@ public:
 
     uint32_t getRxCnt( void ) { return rxCnt; }
 
-//private:
+private:
     std::array<Cmd, cmdBufferSize> txBuffer;    /* Out-going commands. */
     std::array<Cmd, cmdBufferSize> rxBuffer;    /* In-coming commands or replies to out-going commands. */
 

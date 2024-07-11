@@ -67,7 +67,7 @@ public:
     void reset( void ) { type = CmdType::noCmd; }
 
 
-//private:
+private:
 
     CmdType   type;
 

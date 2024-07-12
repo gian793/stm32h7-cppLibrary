@@ -30,10 +30,10 @@ class mxLog : public ringBuffer<char> {
         explicit mxLog( char* pBuf, const size_t bufSize, UART_HandleTypeDef& usartHandle ) : ringBuffer{ pBuf, bufSize }, pUsart{ &usartHandle } {}
 
         // Disable copy/move
-        mxLog( const mxLog& ) = delete;
-        mxLog( mxLog&& ) = delete;
+        mxLog( const mxLog& )            = delete;
+        mxLog( mxLog&& )                 = delete;
         mxLog& operator=( const mxLog& ) = delete;
-        mxLog& operator=( mxLog&& ) = delete;
+        mxLog& operator=( mxLog&& )      = delete;
 
 		size_t Info( const fLog formatLog, ... );
         

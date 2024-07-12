@@ -12,6 +12,8 @@ extern "C"
 
 #include <random>
 #include <array>
+
+#include "stm32_lock.h"
 #include "cmdConfig.h"
 #include "cmd.h"
 #include "cmdCtrl.h"

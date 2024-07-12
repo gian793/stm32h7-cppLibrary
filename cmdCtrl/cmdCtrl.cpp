@@ -6,30 +6,12 @@
 
 #include <algorithm>
 #include <array>
+#include <cstdint>
 
+#include "stm32_lock.h"
 #include "cmdConfig.h"
 #include "cmd.h"
 #include "cmdCtrl.h"
-
- 
-/**
-  * @brief  Tx commands handler.
-  * @param  Next tx command.
-  * @retval True if the cmd is transmitted.
-  */
-
- static bool txCmdManager( Cmd &txCmd )
- {
-    bool isCmdTx = false;
-
-    if( txCmd.type != CmdType::noCmd )
-    {
-        isCmdTx = true;
-    }
-
-    return isCmdTx;
- }
-
 
 /**
   * @brief  Commands handler. Must be invoked periodically.
@@ -40,12 +22,15 @@
 bool cmdCtrl::Manager( void )
 {
     bool isCmdHandled = false;
+
+    stm32_lock_acquire( &cmdLock );
+
     /* Commands Tx. */
     auto idx = txCnt;
 
     while( idx-- > 0 )
     {
-        isCmdHandled = txCmdManager( txBuffer[ idx ] ); 
+        isCmdHandled = txBuffer[ idx ].execute(); 
     }
 
     /* Commands Rx. */
@@ -53,8 +38,10 @@ bool cmdCtrl::Manager( void )
     
     while( idx-- > 0 )
     {
-        //rxCmdManager( idx ); 
+        //isCmdHandled = rxCmdManager( rxBuffer[ idx ] ); 
     }
+
+    stm32_lock_release( &cmdLock );
 
     return isCmdHandled;
 }
@@ -71,7 +58,7 @@ bool cmdCtrl::Tx( Cmd &xCmd )
 {
     bool isTxCmdAdded = false;
 
-    /* TODO Add mutex for exclusive access to shared data. */
+    stm32_lock_acquire( &cmdLock );
 
     if( txCnt < txBuffer.max_size() ) 
     {
@@ -84,6 +71,8 @@ bool cmdCtrl::Tx( Cmd &xCmd )
 
         isTxCmdAdded = true;
     }      
+
+    stm32_lock_release( &cmdLock );
 
     return isTxCmdAdded;
 }
@@ -100,7 +89,7 @@ bool cmdCtrl::Rx( Cmd &xCmd )
 {
     bool isRxCmdAdded = false;
 
-    /* TODO Add mutex for exclusive access to shared data. */
+    stm32_lock_acquire( &cmdLock );
 
     if( rxCnt < rxBuffer.max_size() ) 
     {
@@ -110,7 +99,9 @@ bool cmdCtrl::Rx( Cmd &xCmd )
         std::sort( rxBuffer.begin(), rxBuffer.begin() + rxCnt, Cmd::prioritySmallerEqual );
 
         isRxCmdAdded = true;
-    }        
+    }
+
+    stm32_lock_release( &cmdLock );        
 
     return isRxCmdAdded;
 }

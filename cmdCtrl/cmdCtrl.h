@@ -35,6 +35,9 @@ public:
     uint32_t getRxCnt( void ) { return rxCnt; }
 
 private:
+
+    LockingData_t cmdLock;
+
     std::array<Cmd, cmdBufferSize> txBuffer;    /* Out-going commands. */
     std::array<Cmd, cmdBufferSize> rxBuffer;    /* In-coming commands or replies to out-going commands. */
 
@@ -43,21 +46,9 @@ private:
 
     uint32_t nextToken = 0;
 
-    void resetTxBuf( void )
-    {
-        for( Cmd &c: txBuffer )
-        {
-            c.reset();
-        }
-    }
+    void resetTxBuf( void ) { for( Cmd &c: txBuffer ) { c.reset(); } }
 
-    void resetRxBuf( void )
-    {
-        for( Cmd &c: rxBuffer )
-        {
-            c.reset();
-        }
-    }
+    void resetRxBuf( void ) { for( Cmd &c: rxBuffer ) { c.reset(); } }
 };
 
 /*---------------------------------------------------------------------------*/

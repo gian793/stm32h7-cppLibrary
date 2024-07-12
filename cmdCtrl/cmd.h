@@ -56,7 +56,7 @@ public:
 
     void setToken( uint32_t tokenValue ) { token = tokenValue; }
 
-    void SetCallbacks(  pCallback xCmdDone_Cb = nullptr,
+    void setCallbacks(  pCallback xCmdDone_Cb = nullptr,
                         pCallback xReply_Cb   = nullptr,
                         pCallback xTimeout_Cb = nullptr )
                     {   
@@ -66,6 +66,36 @@ public:
                     }
         
     void reset( void ) { type = CmdType::noCmd; }
+
+    bool execute( void ) 
+    {
+        bool isCmdTx = false;
+
+        if( type != CmdType::noCmd )
+        {
+            switch( state )
+            {
+                case CmdState::Idle:
+                    break; 
+                
+                case CmdState::Sent:
+                    break; 
+                
+                case CmdState::WaitForReply:
+                    break; 
+                
+                case CmdState::Timeout:
+                    break; 
+
+                default:
+                    break;
+            }
+
+            isCmdTx = true;
+        }
+
+        return isCmdTx;
+    };
 
     CmdType   type;
 

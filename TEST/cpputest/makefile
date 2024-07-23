@@ -26,6 +26,7 @@ endif
 #
 #SRC_FILES += example-src/Example.c
 #SRC_FILES += ../Common/unitTest/doubles/stm32h7xx_hal_uart.c
+SRC_FILES += ../../cmdCtrl/cmd.cpp
 SRC_FILES += ../../cmdCtrl/cmdCtrl.cpp
 SRC_FILES += ../../ringBuffer/ringBuffer.cpp
 SRC_FILES += ../../mxLog/mxLog.cpp

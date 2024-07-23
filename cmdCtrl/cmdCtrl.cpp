@@ -1,6 +1,6 @@
 /**
  * \file            cmdCtrl.cpp
- * \brief           Controller for sending and receiving cmmands asynchronously.
+ * \brief           Controller for sending and receiving commands asynchronously.
  * \author          giancarlo.marcolin@gmail.com
  */
 
@@ -13,6 +13,7 @@
 #include "cmd.h"
 #include "cmdCtrl.h"
 
+
 /**
   * @brief  Commands handler. Must be invoked periodically.
   * @param  None.
@@ -21,8 +22,6 @@
 
 bool cmdCtrl::Manager( void )
 {
-    bool isCmdHandled = false;
-
     stm32_lock_acquire( &cmdLock );
 
     /* Commands Tx. */
@@ -30,7 +29,7 @@ bool cmdCtrl::Manager( void )
 
     while( idx-- > 0 )
     {
-        isCmdHandled = txBuffer[ idx ].execute(); 
+        txBuffer[ idx ].execute(); 
     }
 
     /* Commands Rx. */
@@ -43,7 +42,7 @@ bool cmdCtrl::Manager( void )
 
     stm32_lock_release( &cmdLock );
 
-    return isCmdHandled;
+    return true;
 }
 
 
@@ -56,25 +55,25 @@ bool cmdCtrl::Manager( void )
 
 bool cmdCtrl::Tx( Cmd &xCmd )
 {
-    bool isTxCmdAdded = false;
+    bool isCmdAdded = false;
 
     stm32_lock_acquire( &cmdLock );
 
     if( txCnt < txBuffer.max_size() ) 
     {
-        xCmd.setToken( ++nextToken );
+        xCmd.init( ++nextToken );
 
         txBuffer[ txCnt++ ] = xCmd;
 
         /* High priority cmds first. */
         std::sort( txBuffer.begin(), txBuffer.begin() + txCnt, Cmd::prioritySmallerEqual );
 
-        isTxCmdAdded = true;
+        isCmdAdded = true;
     }      
 
     stm32_lock_release( &cmdLock );
 
-    return isTxCmdAdded;
+    return isCmdAdded;
 }
 
 
@@ -87,21 +86,22 @@ bool cmdCtrl::Tx( Cmd &xCmd )
 
 bool cmdCtrl::Rx( Cmd &xCmd )
 {
-    bool isRxCmdAdded = false;
+    bool isCmdAdded = false;
 
     stm32_lock_acquire( &cmdLock );
 
     if( rxCnt < rxBuffer.max_size() ) 
     {
+        /* Token already set by the sender. */
         rxBuffer[ rxCnt++ ] = xCmd; 
 
         /* High priority cmds first. */
         std::sort( rxBuffer.begin(), rxBuffer.begin() + rxCnt, Cmd::prioritySmallerEqual );
 
-        isRxCmdAdded = true;
+        isCmdAdded = true;
     }
 
     stm32_lock_release( &cmdLock );        
 
-    return isRxCmdAdded;
+    return isCmdAdded;
 }

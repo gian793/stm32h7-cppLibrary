@@ -31,24 +31,6 @@ TEST_GROUP( cmdCtrl )
     }
 };
 
-TEST( cmdCtrl, cmdPriority )
-{
-    Cmd cmd1;   /* Default low priority. */
-    Cmd cmd2;
-
-    Cmd cmd3{   CmdType::noCmd, CmdType::noCmd, 
-                PrioLevel::high, 
-                cmdDefaultRetryNr, cmdDefaultTimeoutMs, cmdDefaultPeriodMs, cmdDefaultDelayMs, 
-                nullptr, nullptr, nullptr   };
-
-	CHECK_TRUE( Cmd::priorityGreaterEqual( cmd1, cmd2 ) );
-    CHECK_TRUE( Cmd::priorityEqual( cmd1, cmd2 ) );
-    CHECK_TRUE( Cmd::prioritySmallerEqual( cmd1, cmd2 ) );
-
-    CHECK_TRUE( Cmd::priorityGreaterEqual( cmd3, cmd2 ) );
-    CHECK_TRUE( Cmd::prioritySmallerEqual( cmd1, cmd3 ) );
-}
-
 TEST( cmdCtrl, Init )
 {
     cmdCtrl testCtrl;
@@ -73,14 +55,6 @@ TEST( cmdCtrl, cmdCnt )
 
     CHECK_EQUAL( 3, testCtrl.getTxCnt() );
     CHECK_EQUAL( 4, testCtrl.getRxCnt() );
-}
-
-TEST( cmdCtrl, setGetToken )
-{
-    Cmd cmd; 
-    cmd.setToken( 32 );
-
-    CHECK_EQUAL( 32, cmd.getToken() );
 }
 
 TEST( cmdCtrl, txSort )

@@ -64,54 +64,40 @@ public:
                         reply_Cb   = xReply_Cb;
                         timeout_Cb = xTimeout_Cb;
                     }
+                            
+    void init( uint32_t newToken )  { state = CmdState::Idle; retry = 0; timeoutTimerMs = 0; periodTimerMs = 0; delayTimerMs = 0; token = newToken; }
         
     void reset( void ) { type = CmdType::noCmd; }
 
-    bool execute( void ) 
-    {
-        bool isCmdTx = false;
+    CmdState execute( void );
 
-        if( type != CmdType::noCmd )
-        {
-            switch( state )
-            {
-                case CmdState::Idle:
-                    break; 
-                
-                case CmdState::Sent:
-                    break; 
-                
-                case CmdState::WaitForReply:
-                    break; 
-                
-                case CmdState::Timeout:
-                    break; 
+    CmdType  type;
 
-                default:
-                    break;
-            }
-
-            isCmdTx = true;
-        }
-
-        return isCmdTx;
-    };
-
-    CmdType   type;
-
-    CmdType   replyType;        /* Which type of command is expected as reply. */
+    CmdType  replyType;        /* Which type of command is expected as reply. */
 
 private:
 
     PrioLevel priority;
 
+
     uint32_t  retryNr;
+
+    uint32_t  retry;
+
 
     uint32_t  timeoutMs;
 
+    uint32_t  timeoutTimerMs;
+
+
     uint32_t  periodMs;
 
+    uint32_t  periodTimerMs;
+
+
     uint32_t  delayMs;
+
+    uint32_t  delayTimerMs;
 
 
     pCallback done_Cb;

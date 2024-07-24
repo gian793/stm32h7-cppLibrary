@@ -65,7 +65,7 @@ public:
                         timeout_Cb = xTimeout_Cb;
                     }
                             
-    void init( uint32_t newToken )  { state = CmdState::Idle; retry = 0; timeoutTimerMs = 0; periodTimerMs = 0; delayTimerMs = 0; token = newToken; }
+    void init( uint32_t newToken )  { state = CmdState::Idle; retry = 0; timeoutTimerMs = getTimerMs(); periodTimerMs = getTimerMs(); delayTimerMs = getTimerMs(); token = newToken; }
         
     void reset( void ) { type = CmdType::noCmd; }
 
@@ -112,6 +112,8 @@ private:
     uint32_t  token{0};        /* Each issued command has an unique token assigned to it. Replies must have the same token used by the command request issued. */
 
     bool      suspend{false};  /* Used to suspend (periodic) command execution. */
+
+    uint32_t  getTimerMs( void ) const;
 
     /*
     CmdType   type{CmdType::noCmd};

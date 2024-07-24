@@ -48,6 +48,20 @@ TEST( cmd, cmdPriority )
     CHECK_TRUE( Cmd::prioritySmallerEqual( cmd1, cmd3 ) );
 }
 
+TEST( cmd, executeIdle )
+{
+    Cmd cmd;
+
+    CHECK_TRUE( ( CmdState::Idle == cmd.execute() ) );
+}
+
+TEST( cmd, executeType1 )
+{
+    Cmd cmd{ CmdType::cmd1 };
+
+    CHECK_TRUE( ( CmdState::Sent == cmd.execute() ) );
+}
+
 TEST( cmd, setGetToken )
 {
     Cmd cmd; 

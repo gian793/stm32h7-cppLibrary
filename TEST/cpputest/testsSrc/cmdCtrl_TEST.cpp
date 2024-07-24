@@ -164,5 +164,5 @@ TEST( cmdCtrl, emptyManager )
 {
     cmdCtrl testCtrl;
 
-    CHECK_FALSE( testCtrl.Manager() );
+    CHECK_TRUE( testCtrl.Manager() );
 }

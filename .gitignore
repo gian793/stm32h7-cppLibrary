@@ -1,4 +1,5 @@
 *.o
 *.d
+*.su
 
-
+/TEST/testPrj/CM7/Debug

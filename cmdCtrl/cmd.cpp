@@ -6,9 +6,10 @@
 
 // #include <algorithm>
 // #include <array>
-// #include <cstdint>
+#include <cstdint>
 
 // #include "stm32_lock.h"
+#include "stm32h7xx_hal.h"
 #include "cmdConfig.h"
 #include "cmd.h"
 
@@ -22,7 +23,7 @@ CmdState Cmd::execute( void )
 {
     if( type != CmdType::noCmd )
     {
-        uint32_t timerMs = 0; //getTimerValue()
+        uint32_t timerMs = HAL_GetTick();
 
         switch( state )
         {

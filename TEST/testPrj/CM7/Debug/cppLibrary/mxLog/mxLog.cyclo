@@ -1,0 +1,16 @@
+/opt/st/stm32cubeide_1.16.0/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.12.3.rel1.linux64_1.0.200.202406132123/tools/arm-none-eabi/include/c++/12.3.1/arm-none-eabi/thumb/v7e-m+dp/hard/bits/gthr-default.h:229:1:int __gthread_key_delete(__gthread_key_t)	1
+/home/gian793/Documents/Projects/stm32h7-cppLibrary/mxLog/fLog.h:27:19:constexpr int32_t fPositionGet(const char*)	5
+/home/gian793/Documents/Projects/stm32h7-cppLibrary/mxLog/fLog.h:50:16:constexpr char fFormatGet(const char*)	15
+../../ThreadSafe/stm32_lock.h:293:20:void stm32_lock_acquire(LockingData_t*)	3
+../../ThreadSafe/stm32_lock.h:304:20:void stm32_lock_release(LockingData_t*)	3
+/home/gian793/Documents/Projects/stm32h7-cppLibrary/mxLog/mxLog.cpp:38:8:size_t mxLog::storeMsg(const fData_t*, va_list)	6
+/home/gian793/Documents/Projects/stm32h7-cppLibrary/mxLog/mxLog.cpp:106:8:)	1
+/home/gian793/Documents/Projects/stm32h7-cppLibrary/mxLog/mxLog.cpp:122:19:)	1
+/home/gian793/Documents/Projects/stm32h7-cppLibrary/mxLog/mxLog.cpp:147:6:void mxLog::printStr(const char*, char)	4
+/home/gian793/Documents/Projects/stm32h7-cppLibrary/mxLog/mxLog.cpp:188:6:void mxLog::printPar(char)	17
+/home/gian793/Documents/Projects/stm32h7-cppLibrary/mxLog/mxLog.cpp:287:6:bool mxLog::getHeader()	6
+/home/gian793/Documents/Projects/stm32h7-cppLibrary/mxLog/mxLog.cpp:318:6:void mxLog::printOut()	7
+/home/gian793/Documents/Projects/stm32h7-cppLibrary/mxLog/mxLog.cpp:367:6:void mxLog::taskManager()	2
+/home/gian793/Documents/Projects/stm32h7-cppLibrary/mxLog/mxLog.cpp:373:1:void __static_initialization_and_destruction_0(int, int)	5
+/home/gian793/Documents/Projects/stm32h7-cppLibrary/mxLog/mxLog.cpp:373:1:cpp)	1
+/home/gian793/Documents/Projects/stm32h7-cppLibrary/mxLog/mxLog.cpp:373:1:cpp)	1

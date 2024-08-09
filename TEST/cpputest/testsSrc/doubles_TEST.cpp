@@ -3,13 +3,6 @@
 #include <iostream>
 #include <cstring>
 
-#include <chrono>
-#include <thread>
-
-#include "stm32h7xx_hal.h" 
-
-using namespace std::chrono_literals;
-
 extern "C"
 {
 	/*
@@ -31,13 +24,22 @@ TEST_GROUP( doubles )
     }
 };
 
-TEST( doubles, HAL_GetTick )
-{   
-    auto time1 = HAL_GetTick();
+TEST( doubles, cmdPriority )
+{
+    Cmd cmd1;   /* Default low priority. */
+    Cmd cmd2;
 
-    std::this_thread::sleep_for(123ms);
+    Cmd cmd3{   CmdType::noCmd, CmdType::noCmd, 
+						PrioLevel::high, 
+						cmdDefaultRetryNr, cmdDefaultTimeoutMs, cmdDefaultPeriodMs, cmdDefaultDelayMs, 
+						nullptr, nullptr, nullptr   };
 
-    auto deltaTimeMs = HAL_GetTick() - time1;
+	CHECK_TRUE( Cmd::priorityGreaterEqual( cmd1, cmd2 ) );
+    CHECK_TRUE( Cmd::priorityEqual( cmd1, cmd2 ) );
+    CHECK_TRUE( Cmd::prioritySmallerEqual( cmd1, cmd2 ) );
 
-    CHECK_TRUE( deltaTimeMs == 123 );
+    CHECK_TRUE( Cmd::priorityGreaterEqual( cmd3, cmd2 ) );
+    CHECK_TRUE( Cmd::prioritySmallerEqual( cmd1, cmd3 ) );
 }
+
+

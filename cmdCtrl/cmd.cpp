@@ -61,5 +61,5 @@ CmdState Cmd::execute( void )
 
 uint32_t Cmd::getTimerMs( void ) const
 {
-    return 0;
+    return HAL_GetTick();
 }

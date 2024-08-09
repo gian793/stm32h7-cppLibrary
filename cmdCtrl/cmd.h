@@ -73,7 +73,7 @@ public:
 
     CmdType  type;
 
-    CmdType  replyType;        /* Which type of command is expected as reply. */
+    CmdType  replyType;        /* Command type expected as reply. */
 
 private:
 

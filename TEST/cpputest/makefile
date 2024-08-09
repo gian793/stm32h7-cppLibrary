@@ -41,7 +41,7 @@ SRC_FILES += ../../mxLog/mxLog.cpp
 # TEST_SRC_DIRS, builds everything in the directory
 
 TEST_SRC_FILES += doublesSrc/stm32h7xx_hal_uart.c
-TEST_SRC_FILES += doublesSrc/stm32h7xx_hal.c
+TEST_SRC_FILES += doublesSrc/stm32h7xx_hal.cpp
 
 TEST_SRC_DIRS += tests
 TEST_SRC_DIRS += testsSrc

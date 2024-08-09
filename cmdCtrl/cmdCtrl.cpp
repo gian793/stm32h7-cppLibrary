@@ -27,16 +27,18 @@ bool cmdCtrl::Manager( void )
     /* Commands Tx. */
     auto idx = txCnt;
 
-    while( idx-- > 0 )
+    while( idx > 0 )
     {
+        --idx;
         txBuffer[ idx ].execute(); 
     }
 
     /* Commands Rx. */
     idx = rxCnt;
     
-    while( idx-- > 0 )
+    while( idx > 0 )
     {
+        --idx;
         //isCmdHandled = rxCmdManager( rxBuffer[ idx ] ); 
     }
 

@@ -8,6 +8,7 @@ extern "C"
 	/*
 	 * Add your c-only include files here
 	 */
+    #include "stm32h7xx_hal.h"
 }
 
 #include <random>
@@ -29,6 +30,11 @@ TEST_GROUP( cmd )
 		MemoryLeakWarningPlugin::restoreNewDeleteOverloads();
     }
 };
+
+TEST( cmd, cmdInit )
+{
+
+}
 
 TEST( cmd, cmdPriority )
 {
@@ -68,4 +74,24 @@ TEST( cmd, setGetToken )
     cmd.setToken( 32 );
 
     CHECK_EQUAL( 32, cmd.getToken() );
+}
+
+TEST( cmd, executeDelay )
+{
+    constexpr uint32_t TEST_DelayMs = 23;
+
+    Cmd cmd{    CmdType::cmd1, CmdType::noCmd, 
+						PrioLevel::high, 
+						cmdDefaultRetryNr, cmdDefaultTimeoutMs, cmdDefaultPeriodMs, TEST_DelayMs, 
+						nullptr, nullptr, nullptr   };
+
+    cmd.init( 0 );
+
+    auto time1 = HAL_GetTick();
+
+    while( CmdState::Sent != cmd.execute() ) {};
+
+    auto deltaTimeMs = HAL_GetTick() - time1;
+
+    CHECK_TRUE( deltaTimeMs >= TEST_DelayMs &&  deltaTimeMs < ( TEST_DelayMs + 1 ));
 }

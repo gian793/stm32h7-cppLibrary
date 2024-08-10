@@ -38,6 +38,5 @@ TEST( doubles, getTick )
 
     auto deltaTimeMs = HAL_GetTick( ) - time1;
 
-    CHECK_TRUE( deltaTimeMs == 123 );
-
+    CHECK_TRUE( deltaTimeMs >= 123 && deltaTimeMs < 124 );
 }

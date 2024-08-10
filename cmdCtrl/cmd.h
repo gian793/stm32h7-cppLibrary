@@ -8,7 +8,7 @@
 #define CMDCTRL_CMD_H_
 
 enum class CmdState : int { Idle,
-                            Sent,
+                            Send,
                             WaitForReply,
                             Timeout,
 
@@ -22,7 +22,7 @@ class Cmd {
 
 public:
 
-    using pCallback = void (Cmd::*)(uint8_t*);
+    using pCallback = void (Cmd::*)(void);
 
     Cmd(    CmdType   cmdType      = CmdType::noCmd,
             CmdType   cmdReplyType = CmdType::noCmd,
@@ -31,7 +31,7 @@ public:
             uint32_t  cmdTimeoutMs = cmdDefaultTimeoutMs,
             uint32_t  cmdPeriodMs  = cmdDefaultPeriodMs,
             uint32_t  cmdDelayMs   = cmdDefaultDelayMs,
-            pCallback done         = nullptr,
+            pCallback send         = nullptr,
             pCallback reply        = nullptr,
             pCallback timeout      = nullptr    ) :
 
@@ -42,7 +42,7 @@ public:
             timeoutMs { cmdTimeoutMs },
             periodMs  { cmdPeriodMs },
             delayMs   { cmdDelayMs },
-            done_Cb   { done },
+            send_Cb   { send },
             reply_Cb  { reply },
             timeout_Cb{ timeout }  {}
 
@@ -56,11 +56,11 @@ public:
 
     void setToken( uint32_t tokenValue ) { token = tokenValue; }
 
-    void setCallbacks(  pCallback xCmdDone_Cb = nullptr,
-                        pCallback xReply_Cb   = nullptr,
-                        pCallback xTimeout_Cb = nullptr )
+    void setCallbacks(  pCallback xCmdSend_Cb = nullptr,
+                        pCallback xReply_Cb    = nullptr,
+                        pCallback xTimeout_Cb  = nullptr )
                     {   
-                        done_Cb    = xCmdDone_Cb;
+                        send_Cb    = xCmdSend_Cb;
                         reply_Cb   = xReply_Cb;
                         timeout_Cb = xTimeout_Cb;
                     }
@@ -100,7 +100,7 @@ private:
     uint32_t  delayTimerMs;
 
 
-    pCallback done_Cb;
+    pCallback send_Cb;
 
     pCallback reply_Cb;
 

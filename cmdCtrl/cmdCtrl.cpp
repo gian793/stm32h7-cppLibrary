@@ -39,7 +39,7 @@ bool cmdCtrl::Manager( void )
     while( idx > 0 )
     {
         --idx;
-        //isCmdHandled = rxCmdManager( rxBuffer[ idx ] ); 
+        //rxBuffer[ idx ].execute(); 
     }
 
     stm32_lock_release( &cmdLock );

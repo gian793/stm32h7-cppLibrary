@@ -101,16 +101,16 @@ TEST( cmd, executeDelay )
     CHECK_TRUE( deltaTimeMs >= TEST_DelayMs &&  deltaTimeMs < ( TEST_DelayMs + 1 ));
 }
 
-TEST( cmd, donCb )
-{
-    Cmd cmd{    CmdType::cmd1, CmdType::noCmd, 
-                PrioLevel::high, 
-                cmdDefaultRetryNr, cmdDefaultTimeoutMs, cmdDefaultPeriodMs, cmdDefaultDelayMs, 
-                nullptr, nullptr, nullptr };
+// TEST( cmd, donCb )
+// {
+//     Cmd cmd{    CmdType::cmd1, CmdType::noCmd, 
+//                 PrioLevel::high, 
+//                 cmdDefaultRetryNr, cmdDefaultTimeoutMs, cmdDefaultPeriodMs, cmdDefaultDelayMs, 
+//                 nullptr, nullptr, nullptr };
 
-    //cmd.setCallbacks( nullptr, nullptr, testDoneCb );
+//     //cmd.setCallbacks( nullptr, nullptr, testDoneCb );
 
-    //while( CmdState::Sent != cmd.execute() ) {};
+//     //while( CmdState::Sent != cmd.execute() ) {};
 
-    //CHECK_TRUE( globalFlag );
-}
+//     //CHECK_TRUE( globalFlag );
+// }

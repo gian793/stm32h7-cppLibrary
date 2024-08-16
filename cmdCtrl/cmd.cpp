@@ -32,14 +32,13 @@ CmdState Cmd::execute( void )
                 {
                     delayTimerMs = ( timerMs - delayTimerMs ) - delayMs;
 
-                    (this->*send_Cb)();
-                    pObj->send();
-
                     state = CmdState::Sent;
                 }
                 break; 
             
             case CmdState::Sent:
+                (this->*send_Cb)();
+                //pObj->send();
                 break; 
             
             case CmdState::WaitForReply:

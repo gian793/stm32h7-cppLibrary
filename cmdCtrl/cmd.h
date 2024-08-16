@@ -8,7 +8,7 @@
 #define CMDCTRL_CMD_H_
 
 enum class CmdState : int { Idle,
-                            Send,
+                            Sent,
                             WaitForReply,
                             Timeout,
 
@@ -17,6 +17,14 @@ enum class CmdState : int { Idle,
                             /* helpers. */
                             begin = 0,
                             end = Max };
+
+//template <typename T>
+class cmdObj {
+public:
+    virtual void send( void );
+    virtual void reply( void );
+    virtual void timeout( void );
+};
 
 class Cmd {
 
@@ -33,7 +41,8 @@ public:
             uint32_t  cmdDelayMs   = cmdDefaultDelayMs,
             pCallback send         = nullptr,
             pCallback reply        = nullptr,
-            pCallback timeout      = nullptr    ) :
+            pCallback timeout      = nullptr,
+            cmdObj*   pObject      = nullptr    ) :
 
             type      { cmdType },
             replyType { cmdReplyType },
@@ -44,7 +53,8 @@ public:
             delayMs   { cmdDelayMs },
             send_Cb   { send },
             reply_Cb  { reply },
-            timeout_Cb{ timeout }  {}
+            timeout_Cb{ timeout },
+            pObj      { pObject }  {}
 
     static bool priorityGreaterEqual( const Cmd &lCmd, const Cmd &rCmd ) { return lCmd.priority >= rCmd.priority; } const
 
@@ -106,12 +116,13 @@ private:
 
     pCallback timeout_Cb;
 
+    cmdObj* pObj;
 
-    CmdState  state{CmdState::Idle};
+    CmdState  state{ CmdState::Idle };
 
-    uint32_t  token{0};        /* Each issued command has an unique token assigned to it. Replies must have the same token used by the command request issued. */
+    uint32_t  token{ 0 };           /* Each issued command has an unique token assigned to it. Replies must have the same token used by the command request issued. */
 
-    bool      suspend{false};  /* Used to suspend (periodic) command execution. */
+    bool      suspend{ false };     /* Used to suspend (periodic) command execution. */
 
     uint32_t  getTimerMs( void ) const;
 

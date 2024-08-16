@@ -31,12 +31,15 @@ CmdState Cmd::execute( void )
                 if( ( timerMs - delayTimerMs ) >= delayMs )
                 {
                     delayTimerMs = ( timerMs - delayTimerMs ) - delayMs;
-                    state = CmdState::Send;
+
+                    (this->*send_Cb)();
+                    pObj->send();
+
+                    state = CmdState::Sent;
                 }
                 break; 
             
-            case CmdState::Send:
-                (this->*send_Cb)();
+            case CmdState::Sent:
                 break; 
             
             case CmdState::WaitForReply:

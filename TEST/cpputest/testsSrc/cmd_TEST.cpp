@@ -18,10 +18,15 @@ extern "C"
 #include "cmdConfig.h"
 #include "cmd.h"
 
-void testDoneCb( void );
+class myObj: public cmdObj {
+    public:
+        void send( void ) override { res++; };
+        uint32_t getRes( void ) { return res; }
+        void reset( void ) { res = 0; }
 
-bool globalFlag = false;
-void testDoneCb( void ) { globalFlag = true; }
+    private:
+        uint32_t res = 0;
+};
 
 TEST_GROUP( cmd )
 {
@@ -35,11 +40,6 @@ TEST_GROUP( cmd )
 		MemoryLeakWarningPlugin::restoreNewDeleteOverloads();
     }
 };
-
-TEST( cmd, cmdInit )
-{
-
-}
 
 TEST( cmd, cmdPriority )
 {
@@ -63,6 +63,8 @@ TEST( cmd, executeIdle )
 {
     Cmd cmd;
 
+    CHECK_TRUE( ( CmdState::Idle == cmd.execute() ) );
+    CHECK_TRUE( ( CmdState::Idle == cmd.execute() ) );
     CHECK_TRUE( ( CmdState::Idle == cmd.execute() ) );
 }
 
@@ -88,7 +90,7 @@ TEST( cmd, executeDelay )
     Cmd cmd{    CmdType::cmd1, CmdType::noCmd, 
                 PrioLevel::high, 
                 cmdDefaultRetryNr, cmdDefaultTimeoutMs, cmdDefaultPeriodMs, TEST_DelayMs, 
-                nullptr, nullptr, nullptr   };
+                nullptr, nullptr, nullptr, nullptr   };
 
     cmd.init( 0 );
 
@@ -101,16 +103,22 @@ TEST( cmd, executeDelay )
     CHECK_TRUE( deltaTimeMs >= TEST_DelayMs &&  deltaTimeMs < ( TEST_DelayMs + 1 ));
 }
 
-// TEST( cmd, donCb )
-// {
-//     Cmd cmd{    CmdType::cmd1, CmdType::noCmd, 
-//                 PrioLevel::high, 
-//                 cmdDefaultRetryNr, cmdDefaultTimeoutMs, cmdDefaultPeriodMs, cmdDefaultDelayMs, 
-//                 nullptr, nullptr, nullptr };
+TEST( cmd, donCb )
+{
+    Cmd cmd{    CmdType::cmd1, CmdType::noCmd, 
+                PrioLevel::high, 
+                cmdDefaultRetryNr, cmdDefaultTimeoutMs, cmdDefaultPeriodMs, cmdDefaultDelayMs, 
+                nullptr, nullptr, nullptr };
 
-//     //cmd.setCallbacks( nullptr, nullptr, testDoneCb );
+    myObj localObj;
 
-//     //while( CmdState::Sent != cmd.execute() ) {};
+    localObj.reset();
 
-//     //CHECK_TRUE( globalFlag );
-// }
+    cmd.init( 0, &localObj );
+
+    CHECK_EQUAL( 0, localObj.getRes() );
+
+    while( CmdState::Sent != cmd.execute() ) {};
+
+    CHECK_EQUAL( 1, localObj.getRes() );
+}

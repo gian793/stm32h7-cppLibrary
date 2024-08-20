@@ -21,9 +21,9 @@ enum class CmdState : int { Idle,
 //template <typename T>
 class cmdObj {
 public:
-    virtual void send( void );
-    virtual void reply( void );
-    virtual void timeout( void );
+    virtual void send( void ) {};
+    virtual void reply( void ) {};
+    virtual void timeout( void ) {};
 };
 
 class Cmd {
@@ -75,8 +75,16 @@ public:
                         timeout_Cb = xTimeout_Cb;
                     }
                             
-    void init( uint32_t newToken )  { state = CmdState::Idle; retry = 0; timeoutTimerMs = getTimerMs(); periodTimerMs = getTimerMs(); delayTimerMs = getTimerMs(); token = newToken; }
-        
+    void init( uint32_t newToken )  {   token = newToken; 
+                                        state = CmdState::Idle; 
+                                        retry = 0; 
+                                        timeoutTimerMs = getTimerMs(); 
+                                        periodTimerMs  = getTimerMs(); 
+                                        delayTimerMs   = getTimerMs();  }
+
+    void init( uint32_t newToken, cmdObj* pObject )  {  init( newToken );
+                                                        pObj = pObject;  }
+                                        
     void reset( void ) { type = CmdType::noCmd; }
 
     CmdState execute( void );
@@ -116,7 +124,9 @@ private:
 
     pCallback timeout_Cb;
 
-    cmdObj* pObj;
+    static cmdObj obj;
+
+    cmdObj* pObj { &obj };
 
     CmdState  state{ CmdState::Idle };
 

@@ -21,6 +21,7 @@ extern "C"
 class myObj: public cmdObj {
     public:
         void send( void ) override { res++; };
+
         uint32_t getRes( void ) { return res; }
         void reset( void ) { res = 0; }
 
@@ -47,9 +48,9 @@ TEST( cmd, cmdPriority )
     Cmd cmd2;
 
     Cmd cmd3{   CmdType::noCmd, CmdType::noCmd, 
-						PrioLevel::high, 
-						cmdDefaultRetryNr, cmdDefaultTimeoutMs, cmdDefaultPeriodMs, cmdDefaultDelayMs, 
-						nullptr, nullptr, nullptr   };
+				PrioLevel::high, 
+				cmdDefaultRetryNr, cmdDefaultTimeoutMs, cmdDefaultPeriodMs, cmdDefaultDelayMs, 
+                nullptr   };
 
 	CHECK_TRUE( Cmd::priorityGreaterEqual( cmd1, cmd2 ) );
     CHECK_TRUE( Cmd::priorityEqual( cmd1, cmd2 ) );
@@ -90,7 +91,7 @@ TEST( cmd, executeDelay )
     Cmd cmd{    CmdType::cmd1, CmdType::noCmd, 
                 PrioLevel::high, 
                 cmdDefaultRetryNr, cmdDefaultTimeoutMs, cmdDefaultPeriodMs, TEST_DelayMs, 
-                nullptr, nullptr, nullptr, nullptr   };
+                nullptr };
 
     cmd.init( 0 );
 
@@ -108,7 +109,7 @@ TEST( cmd, donCb )
     Cmd cmd{    CmdType::cmd1, CmdType::noCmd, 
                 PrioLevel::high, 
                 cmdDefaultRetryNr, cmdDefaultTimeoutMs, cmdDefaultPeriodMs, cmdDefaultDelayMs, 
-                nullptr, nullptr, nullptr };
+                nullptr };
 
     myObj localObj;
 
@@ -118,7 +119,21 @@ TEST( cmd, donCb )
 
     CHECK_EQUAL( 0, localObj.getRes() );
 
-    while( CmdState::Sent != cmd.execute() ) {};
+    CHECK_TRUE( CmdState::Sent == cmd.execute() );
 
     CHECK_EQUAL( 1, localObj.getRes() );
+}
+
+TEST( cmd, waitForReplyState )
+{
+    Cmd cmd{    CmdType::cmd1, CmdType::cmd1, 
+                PrioLevel::high, 
+                cmdDefaultRetryNr, cmdDefaultTimeoutMs, cmdDefaultPeriodMs, cmdDefaultDelayMs, 
+                nullptr };
+
+    cmd.init( 0 );
+
+    CHECK_TRUE( CmdState::Sent == cmd.execute() );
+
+    CHECK_TRUE( CmdState::WaitForReply == cmd.execute() );
 }

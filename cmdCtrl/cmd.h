@@ -18,7 +18,6 @@ enum class CmdState : int { Idle,
                             begin = 0,
                             end = Max };
 
-//template <typename T>
 class cmdObj {
 public:
     virtual void send( void ) {};
@@ -30,7 +29,7 @@ class Cmd {
 
 public:
 
-    using pCallback = void (Cmd::*)(void);
+    //using pCallback = void (Cmd::*)(void);
 
     Cmd(    CmdType   cmdType      = CmdType::noCmd,
             CmdType   cmdReplyType = CmdType::noCmd,
@@ -39,9 +38,6 @@ public:
             uint32_t  cmdTimeoutMs = cmdDefaultTimeoutMs,
             uint32_t  cmdPeriodMs  = cmdDefaultPeriodMs,
             uint32_t  cmdDelayMs   = cmdDefaultDelayMs,
-            pCallback send         = nullptr,
-            pCallback reply        = nullptr,
-            pCallback timeout      = nullptr,
             cmdObj*   pObject      = nullptr    ) :
 
             type      { cmdType },
@@ -51,9 +47,6 @@ public:
             timeoutMs { cmdTimeoutMs },
             periodMs  { cmdPeriodMs },
             delayMs   { cmdDelayMs },
-            send_Cb   { send },
-            reply_Cb  { reply },
-            timeout_Cb{ timeout },
             pObj      { pObject }  {}
 
     static bool priorityGreaterEqual( const Cmd &lCmd, const Cmd &rCmd ) { return lCmd.priority >= rCmd.priority; } const
@@ -65,15 +58,6 @@ public:
     uint32_t getToken( void ) { return token; } const
 
     void setToken( uint32_t tokenValue ) { token = tokenValue; }
-
-    void setCallbacks(  pCallback xCmdSend_Cb = nullptr,
-                        pCallback xReply_Cb    = nullptr,
-                        pCallback xTimeout_Cb  = nullptr )
-                    {   
-                        send_Cb    = xCmdSend_Cb;
-                        reply_Cb   = xReply_Cb;
-                        timeout_Cb = xTimeout_Cb;
-                    }
                             
     void init( uint32_t newToken )  {   token = newToken; 
                                         state = CmdState::Idle; 
@@ -117,14 +101,7 @@ private:
 
     uint32_t  delayTimerMs;
 
-
-    pCallback send_Cb;
-
-    pCallback reply_Cb;
-
-    pCallback timeout_Cb;
-
-    static cmdObj obj;
+    cmdObj obj;
 
     cmdObj* pObj { &obj };
 
@@ -135,36 +112,6 @@ private:
     bool      suspend{ false };     /* Used to suspend (periodic) command execution. */
 
     uint32_t  getTimerMs( void ) const;
-
-    /*
-    CmdType   type{CmdType::noCmd};
-
-    CmdType   replyType{CmdType::noCmd};      
-    
-
-    PrioLevel priority{PrioLevel::low};
-
-    uint32_t  retryNr{cmdDefaultRetryNr};
-
-    uint32_t  timeoutMs{cmdDefaultTimeoutMs};
-
-    uint32_t  periodMs{cmdDefaultPeriodMs};
-
-    uint32_t  delayMs{cmdDefaultDelayMs};
-
-
-    pCallback done_Cb{nullptr};
-
-    pCallback reply_Cb{nullptr};
-
-    pCallback timeout_Cb{nullptr};
-
-
-    CmdState  state{CmdState::Idle};
-
-    uint32_t  token{0};        
-
-    bool suspend{false};       */
 
 };
 

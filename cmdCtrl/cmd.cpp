@@ -42,9 +42,7 @@ CmdState Cmd::execute( void )
                 break; 
             
             case CmdState::Sent:
-                //(this->*send_Cb)();
-                break; 
-            
+                state = ( replyType != CmdType::noCmd ) ? CmdState::WaitForReply : CmdState::Idle ;
             case CmdState::WaitForReply:
                 break; 
             

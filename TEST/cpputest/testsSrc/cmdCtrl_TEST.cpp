@@ -64,37 +64,37 @@ TEST( cmdCtrl, txSort )
             CmdType::noCmd, 
             PrioLevel::l3, 
             cmdDefaultRetryNr, cmdDefaultTimeoutMs, cmdDefaultPeriodMs, cmdDefaultDelayMs, 
-            nullptr, nullptr, nullptr   };
+            nullptr   };
 
     Cmd t1{ CmdType::cmd1, 
             CmdType::noCmd, 
             PrioLevel::high, 
             cmdDefaultRetryNr, cmdDefaultTimeoutMs, cmdDefaultPeriodMs, cmdDefaultDelayMs, 
-            nullptr, nullptr, nullptr   };
+            nullptr   };
 
     Cmd t2{ CmdType::cmd2, 
             CmdType::noCmd, 
             PrioLevel::low, 
             cmdDefaultRetryNr, cmdDefaultTimeoutMs, cmdDefaultPeriodMs, cmdDefaultDelayMs, 
-            nullptr, nullptr, nullptr   };
+            nullptr   };
 
     Cmd t3{ CmdType::cmd3, 
             CmdType::noCmd, 
             PrioLevel::l2, 
             cmdDefaultRetryNr, cmdDefaultTimeoutMs, cmdDefaultPeriodMs, cmdDefaultDelayMs, 
-            nullptr, nullptr, nullptr   };
+            nullptr   };
 
     Cmd t4{ CmdType::cmd4, 
             CmdType::noCmd, 
             PrioLevel::l2, 
             cmdDefaultRetryNr, cmdDefaultTimeoutMs, cmdDefaultPeriodMs, cmdDefaultDelayMs, 
-            nullptr, nullptr, nullptr   };
+            nullptr   };
     
     Cmd t5{ CmdType::cmd5, 
             CmdType::noCmd, 
             PrioLevel::low, 
             cmdDefaultRetryNr, cmdDefaultTimeoutMs, cmdDefaultPeriodMs, cmdDefaultDelayMs, 
-            nullptr, nullptr, nullptr   };
+            nullptr   };
 
     cmdCtrl testCtrl;
 
@@ -127,19 +127,19 @@ TEST( cmdCtrl, rxSort )
             CmdType::noCmd, 
             PrioLevel::l3, 
             cmdDefaultRetryNr, cmdDefaultTimeoutMs, cmdDefaultPeriodMs, cmdDefaultDelayMs, 
-            nullptr, nullptr, nullptr   };
+            nullptr   };
 
     Cmd r1{ CmdType::cmd1, 
             CmdType::noCmd, 
             PrioLevel::high, 
             cmdDefaultRetryNr, cmdDefaultTimeoutMs, cmdDefaultPeriodMs, cmdDefaultDelayMs, 
-            nullptr, nullptr, nullptr   };
+            nullptr   };
 
     Cmd r2{ CmdType::cmd2, 
             CmdType::noCmd, 
             PrioLevel::low, 
             cmdDefaultRetryNr, cmdDefaultTimeoutMs, cmdDefaultPeriodMs, cmdDefaultDelayMs, 
-            nullptr, nullptr, nullptr   };
+            nullptr   };
 
     cmdCtrl testCtrl;
 

@@ -76,14 +76,6 @@ TEST( cmd, executeType1 )
     CHECK_TRUE( ( CmdState::Sent == cmd.execute() ) );
 }
 
-TEST( cmd, setGetToken )
-{
-    Cmd cmd; 
-    cmd.setToken( 32 );
-
-    CHECK_EQUAL( 32, cmd.getToken() );
-}
-
 TEST( cmd, executeDelay )
 {
     constexpr uint32_t TEST_DelayMs = 23;

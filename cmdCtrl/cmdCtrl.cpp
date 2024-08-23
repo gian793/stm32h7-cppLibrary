@@ -67,7 +67,7 @@ bool cmdCtrl::Tx( Cmd &xCmd )
 
         txBuffer[ txCnt++ ] = xCmd;
 
-        /* High priority cmds first. */
+        /* Low priority cmds first. */
         std::sort( txBuffer.begin(), txBuffer.begin() + txCnt, Cmd::prioritySmallerEqual );
 
         isCmdAdded = true;
@@ -92,16 +92,29 @@ bool cmdCtrl::Rx( Cmd &xCmd )
 
     stm32_lock_acquire( &cmdLock );
 
-    if( rxCnt < rxBuffer.max_size() ) 
+    auto idx = txCnt;
+
+    while( idx > 0 )
     {
-        /* Token already set by the sender. */
-        rxBuffer[ rxCnt++ ] = xCmd; 
+        --idx;
 
-        /* High priority cmds first. */
-        std::sort( rxBuffer.begin(), rxBuffer.begin() + rxCnt, Cmd::prioritySmallerEqual );
+        if( txBuffer[ idx ].type  == xCmd.type && 
+            txBuffer[ idx ].token == xCmd.token )
+        {
 
-        isCmdAdded = true;
+        }
     }
+
+    // if( rxCnt < rxBuffer.max_size() ) 
+    // {
+    //     /* Token already set by the sender. */
+    //     rxBuffer[ rxCnt++ ] = xCmd; 
+
+    //     /* High priority cmds first. */
+    //     std::sort( rxBuffer.begin(), rxBuffer.begin() + rxCnt, Cmd::prioritySmallerEqual );
+
+    //     isCmdAdded = true;
+    // }
 
     stm32_lock_release( &cmdLock );        
 

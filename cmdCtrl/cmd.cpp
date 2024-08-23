@@ -27,10 +27,13 @@ CmdState Cmd::execute( void )
 
         switch( state )
         {
+            case CmdState::Done:
+                state = CmdState::Idle;
             case CmdState::Idle:
                 if( ( timerMs - delayTimerMs ) >= delayMs )
                 {
-                    delayTimerMs = ( timerMs - delayTimerMs ) - delayMs;
+                    delayTimerMs   = timerMs - delayTimerMs - delayMs;
+                    timeoutTimerMs = timerMs;
 
                     if( pObj != nullptr )
                     {
@@ -42,8 +45,13 @@ CmdState Cmd::execute( void )
                 break; 
             
             case CmdState::Sent:
-                state = ( replyType != CmdType::noCmd ) ? CmdState::WaitForReply : CmdState::Idle ;
+                state = ( replyType != CmdType::noCmd ) ? CmdState::WaitForReply : CmdState::Done;
             case CmdState::WaitForReply:
+
+                if( ( timerMs - timeoutTimerMs ) >= timeoutMs )
+                {
+                    state = CmdState::Timeout;
+                }
                 break; 
             
             case CmdState::Timeout:

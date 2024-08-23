@@ -10,6 +10,7 @@
 enum class CmdState : int { Idle,
                             Sent,
                             WaitForReply,
+                            Done,
                             Timeout,
 
                             Max,
@@ -54,10 +55,6 @@ public:
     static bool prioritySmallerEqual( const Cmd &lCmd, const Cmd &rCmd ) { return lCmd.priority <= rCmd.priority; } const
 
     static bool priorityEqual( const Cmd &lCmd, const Cmd &rCmd ) { return lCmd.priority == rCmd.priority; } const
-
-    uint32_t getToken( void ) { return token; } const
-
-    void setToken( uint32_t tokenValue ) { token = tokenValue; }
                             
     void init( uint32_t newToken )  {   token = newToken; 
                                         state = CmdState::Idle; 
@@ -76,6 +73,8 @@ public:
     CmdType  type;
 
     CmdType  replyType;        /* Command type expected as reply. */
+
+    uint32_t  token{ 0 };      /* Each issued command has an unique token assigned to it. Replies must have the same token used by the issued command they refer to. */
 
 private:
 
@@ -106,8 +105,6 @@ private:
     cmdObj* pObj { &obj };
 
     CmdState  state{ CmdState::Idle };
-
-    uint32_t  token{ 0 };           /* Each issued command has an unique token assigned to it. Replies must have the same token used by the command request issued. */
 
     bool      suspend{ false };     /* Used to suspend (periodic) command execution. */
 

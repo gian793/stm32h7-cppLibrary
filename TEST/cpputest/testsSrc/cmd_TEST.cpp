@@ -49,8 +49,7 @@ TEST( cmd, cmdPriority )
 
     Cmd cmd3{   CmdType::noCmd, CmdType::noCmd, 
 				PrioLevel::high, 
-				cmdDefaultRetryNr, cmdDefaultTimeoutMs, cmdDefaultPeriodMs, cmdDefaultDelayMs, 
-                nullptr   };
+				cmdDefaultRetryNr, cmdDefaultTimeoutMs, cmdDefaultPeriodMs, cmdDefaultDelayMs   };
 
 	CHECK_TRUE( Cmd::priorityGreaterEqual( cmd1, cmd2 ) );
     CHECK_TRUE( Cmd::priorityEqual( cmd1, cmd2 ) );
@@ -82,8 +81,7 @@ TEST( cmd, executeDelay )
 
     Cmd cmd{    CmdType::cmd1, CmdType::noCmd, 
                 PrioLevel::high, 
-                cmdDefaultRetryNr, cmdDefaultTimeoutMs, cmdDefaultPeriodMs, TEST_DelayMs, 
-                nullptr };
+                cmdDefaultRetryNr, cmdDefaultTimeoutMs, cmdDefaultPeriodMs, TEST_DelayMs   };
 
     cmd.init( 0 );
 
@@ -96,12 +94,32 @@ TEST( cmd, executeDelay )
     CHECK_TRUE( deltaTimeMs >= TEST_DelayMs &&  deltaTimeMs < ( TEST_DelayMs + 1 ));
 }
 
-TEST( cmd, donCb )
+TEST( cmd, donCb1 )
+{
+    myObj localObj;
+
+    localObj.reset();
+
+    Cmd cmd{    &localObj, 
+                CmdType::cmd1, CmdType::noCmd, 
+                PrioLevel::high, 
+                cmdDefaultRetryNr, cmdDefaultTimeoutMs, cmdDefaultPeriodMs, cmdDefaultDelayMs   };
+
+
+    cmd.init( 0 );
+
+    CHECK_EQUAL( 0, localObj.getRes() );
+
+    CHECK_TRUE( CmdState::Sent == cmd.execute() );
+
+    CHECK_EQUAL( 1, localObj.getRes() );
+}
+
+TEST( cmd, donCb2 )
 {
     Cmd cmd{    CmdType::cmd1, CmdType::noCmd, 
                 PrioLevel::high, 
-                cmdDefaultRetryNr, cmdDefaultTimeoutMs, cmdDefaultPeriodMs, cmdDefaultDelayMs, 
-                nullptr };
+                cmdDefaultRetryNr, cmdDefaultTimeoutMs, cmdDefaultPeriodMs, cmdDefaultDelayMs   };
 
     myObj localObj;
 
@@ -120,8 +138,7 @@ TEST( cmd, waitForReplyState )
 {
     Cmd cmd{    CmdType::cmd1, CmdType::cmd1, 
                 PrioLevel::high, 
-                cmdDefaultRetryNr, cmdDefaultTimeoutMs, cmdDefaultPeriodMs, cmdDefaultDelayMs, 
-                nullptr };
+                cmdDefaultRetryNr, cmdDefaultTimeoutMs, cmdDefaultPeriodMs, cmdDefaultDelayMs   };
 
     cmd.init( 0 );
 

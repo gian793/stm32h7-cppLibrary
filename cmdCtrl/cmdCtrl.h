@@ -13,10 +13,7 @@ class cmdCtrl
 {
 public:
 
-    cmdCtrl() { 
-        resetTxBuf();
-        resetRxBuf();
-    }
+    cmdCtrl() { resetTxBuf(); }
 
     bool Manager( void );
 
@@ -28,27 +25,20 @@ public:
 
     Cmd getTxCmd( uint32_t cmdIdx )  { return txBuffer[ cmdIdx ]; }
 
-    Cmd getRxCmd( uint32_t cmdIdx )  { return rxBuffer[ cmdIdx ]; } 
-
     uint32_t getTxCnt( void ) { return txCnt; } 
-
-    uint32_t getRxCnt( void ) { return rxCnt; }
 
 private:
 
     LockingData_t cmdLock;
 
     std::array<Cmd, cmdBufferSize> txBuffer;    /* Out-going commands. */
-    std::array<Cmd, cmdBufferSize> rxBuffer;    /* In-coming commands or replies to out-going commands. */
+    std::array<uint32_t, cmdBufferSize> prioBuffer;    /* In-coming commands or replies to out-going commands. */
 
     uint32_t txCnt =  0;                        /* Number of cmds to send. */
-    uint32_t rxCnt =  0;                        /* Number of received cmds. */
 
     uint32_t nextToken = 0;
 
     void resetTxBuf( void ) { for( Cmd &c: txBuffer ) { c.reset(); } }
-
-    void resetRxBuf( void ) { for( Cmd &c: rxBuffer ) { c.reset(); } }
 };
 
 /*---------------------------------------------------------------------------*/

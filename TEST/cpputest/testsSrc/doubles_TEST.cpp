@@ -38,5 +38,10 @@ TEST( doubles, getTick )
 
     auto deltaTimeMs = HAL_GetTick( ) - time1;
 
-    CHECK_TRUE( deltaTimeMs >= 123 && deltaTimeMs < 124 );
+    if( deltaTimeMs != 123 )
+    {
+       std::cout << "Error double TEST -> deltaTimeMs = " << deltaTimeMs << std::endl;
+    }
+
+    CHECK_TRUE( deltaTimeMs == 123 );
 }

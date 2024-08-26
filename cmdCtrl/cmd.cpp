@@ -35,10 +35,7 @@ CmdState Cmd::execute( void )
                     delayTimerMs   = timerMs - delayTimerMs - delayMs;
                     timeoutTimerMs = timerMs;
 
-                    if( pObj != nullptr )
-                    {
-                        pObj->send();
-                    }
+                    pObj->send();
 
                     state = CmdState::Sent;
                 }
@@ -48,7 +45,11 @@ CmdState Cmd::execute( void )
                 state = ( replyType != CmdType::noCmd ) ? CmdState::WaitForReply : CmdState::Done;
             case CmdState::WaitForReply:
 
-                if( ( timerMs - timeoutTimerMs ) >= timeoutMs )
+                if( isReplied )
+                {
+                    state = CmdState::Done;
+                }
+                else if( ( timerMs - timeoutTimerMs ) >= timeoutMs )
                 {
                     state = CmdState::Timeout;
                 }

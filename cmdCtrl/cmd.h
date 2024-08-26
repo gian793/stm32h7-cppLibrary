@@ -38,8 +38,7 @@ public:
             uint32_t  cmdRetryNr   = cmdDefaultRetryNr,
             uint32_t  cmdTimeoutMs = cmdDefaultTimeoutMs,
             uint32_t  cmdPeriodMs  = cmdDefaultPeriodMs,
-            uint32_t  cmdDelayMs   = cmdDefaultDelayMs,
-            cmdObj*   pObject      = nullptr    ) :
+            uint32_t  cmdDelayMs   = cmdDefaultDelayMs   ) :
 
             type      { cmdType },
             replyType { cmdReplyType },
@@ -47,8 +46,22 @@ public:
             retryNr   { cmdRetryNr },
             timeoutMs { cmdTimeoutMs },
             periodMs  { cmdPeriodMs },
-            delayMs   { cmdDelayMs },
-            pObj      { pObject }  {}
+            delayMs   { cmdDelayMs } {}
+
+    Cmd(    cmdObj*   pObject, 
+            CmdType   cmdType      = CmdType::noCmd,
+            CmdType   cmdReplyType = CmdType::noCmd,
+            PrioLevel cmdPrioLevel = PrioLevel::low,
+            uint32_t  cmdRetryNr   = cmdDefaultRetryNr,
+            uint32_t  cmdTimeoutMs = cmdDefaultTimeoutMs,
+            uint32_t  cmdPeriodMs  = cmdDefaultPeriodMs,
+            uint32_t  cmdDelayMs   = cmdDefaultDelayMs   ) :
+            
+            Cmd {   cmdType, 
+                    cmdReplyType, 
+                    cmdPrioLevel, 
+                    cmdRetryNr, 
+                    cmdTimeoutMs, cmdPeriodMs, cmdDelayMs   } { pObj = pObject; }
 
     static bool priorityGreaterEqual( const Cmd &lCmd, const Cmd &rCmd ) { return lCmd.priority >= rCmd.priority; } const
 
@@ -70,6 +83,8 @@ public:
 
     CmdState execute( void );
 
+    void replied( void ) { isReplied = true; };
+
     CmdType  type;
 
     CmdType  replyType;        /* Command type expected as reply. */
@@ -77,6 +92,11 @@ public:
     uint32_t  token{ 0 };      /* Each issued command has an unique token assigned to it. Replies must have the same token used by the issued command they refer to. */
 
 private:
+
+    cmdObj obj;
+
+    cmdObj* pObj { &obj };
+
 
     PrioLevel priority;
 
@@ -100,13 +120,11 @@ private:
 
     uint32_t  delayTimerMs;
 
-    cmdObj obj;
-
-    cmdObj* pObj { &obj };
-
     CmdState  state{ CmdState::Idle };
 
     bool      suspend{ false };     /* Used to suspend (periodic) command execution. */
+
+    bool      isReplied{ false };
 
     uint32_t  getTimerMs( void ) const;
 

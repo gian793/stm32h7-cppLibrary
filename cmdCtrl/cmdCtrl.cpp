@@ -33,15 +33,6 @@ bool cmdCtrl::Manager( void )
         txBuffer[ idx ].execute(); 
     }
 
-    /* Commands Rx. */
-    idx = rxCnt;
-    
-    while( idx > 0 )
-    {
-        --idx;
-        //rxBuffer[ idx ].execute(); 
-    }
-
     stm32_lock_release( &cmdLock );
 
     return true;
@@ -60,6 +51,20 @@ bool cmdCtrl::Tx( Cmd &xCmd )
     bool isCmdAdded = false;
 
     stm32_lock_acquire( &cmdLock );
+
+    auto idx = txCnt;
+
+    while( idx > 0 )
+    {
+        --idx;
+    
+        /* Is this a reply? */
+        if( txBuffer[ idx ].type  == xCmd.type && 
+            txBuffer[ idx ].token == xCmd.token )
+        {
+            txBuffer[ idx ].replied();
+        }
+    }
 
     if( txCnt < txBuffer.max_size() ) 
     {

@@ -9,6 +9,10 @@
         "type_traits": "cpp",
         "utility": "cpp",
         "cstdint": "c",
-        "*.tcc": "cpp"
+        "*.tcc": "cpp",
+        "charconv": "cpp",
+        "complex": "cpp",
+        "variant": "cpp",
+        "ostream": "cpp"
     }
 }

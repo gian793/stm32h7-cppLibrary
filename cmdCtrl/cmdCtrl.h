@@ -11,34 +11,32 @@
 
 class cmdCtrl
 {
-public:
+    public:
 
-    cmdCtrl() { resetTxBuf(); }
+        cmdCtrl() { resetTxBuf(); }
 
-    bool Manager( void );
+        bool Manager( void );
 
-    bool Tx( Cmd &xCmd );
+        bool Load( Cmd &xCmd );
 
-    bool Rx( Cmd &xCmd );
+        //void RemoveCmd( uint32_t token );
 
-    //void RemoveCmd( uint32_t token );
+        Cmd getTxCmd( uint32_t cmdIdx )  { return txBuffer[ cmdIdx ]; }
 
-    Cmd getTxCmd( uint32_t cmdIdx )  { return txBuffer[ cmdIdx ]; }
+        uint32_t getTxCnt( void ) { return txCnt; } 
 
-    uint32_t getTxCnt( void ) { return txCnt; } 
+    private:
 
-private:
+        LockingData_t cmdLock;
 
-    LockingData_t cmdLock;
+        std::array<Cmd, cmdBufferSize> txBuffer;    /* Out-going commands. */
+        std::array<uint32_t, cmdBufferSize> prioBuffer;    /* In-coming commands or replies to out-going commands. */
 
-    std::array<Cmd, cmdBufferSize> txBuffer;    /* Out-going commands. */
-    std::array<uint32_t, cmdBufferSize> prioBuffer;    /* In-coming commands or replies to out-going commands. */
+        uint32_t txCnt{0};                        /* Number of cmds to send. */
 
-    uint32_t txCnt =  0;                        /* Number of cmds to send. */
+        uint32_t nextToken{0};
 
-    uint32_t nextToken = 0;
-
-    void resetTxBuf( void ) { for( Cmd &c: txBuffer ) { c.reset(); } }
+        void resetTxBuf( void ) { for( Cmd &c: txBuffer ) { c.reset(); } }
 };
 
 /*---------------------------------------------------------------------------*/

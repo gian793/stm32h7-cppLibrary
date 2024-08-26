@@ -40,14 +40,17 @@ TEST( cmdCtrl, Init )
 
 TEST( cmdCtrl, cmdCnt )
 {
-    cmdCtrl testCtrl;
-    Cmd cmd; 
 
-    testCtrl.Tx( cmd );
-    testCtrl.Tx( cmd );
-    testCtrl.Tx( cmd );
+     cmdCtrl testCtrl;
+     Cmd cmd; 
 
-    CHECK_EQUAL( 3, testCtrl.getTxCnt() );
+     testCtrl.Load( cmd );
+     testCtrl.Load( cmd );
+     testCtrl.Load( cmd );
+
+     CHECK_EQUAL( 3, testCtrl.getTxCnt() );
+
+     std::cout << "Test t1" << std::endl;
 }
 
 TEST( cmdCtrl, txSort )
@@ -85,12 +88,12 @@ TEST( cmdCtrl, txSort )
 
     cmdCtrl testCtrl;
 
-    CHECK_TRUE( testCtrl.Tx( t0 ) );
-    CHECK_TRUE( testCtrl.Tx( t1 ) );
-    CHECK_TRUE( testCtrl.Tx( t2 ) );
-    CHECK_TRUE( testCtrl.Tx( t3 ) );
-    CHECK_TRUE( testCtrl.Tx( t4 ) );
-    CHECK_TRUE( testCtrl.Tx( t5 ) );
+    CHECK_TRUE( testCtrl.Load( t0 ) );
+    CHECK_TRUE( testCtrl.Load( t1 ) );
+    CHECK_TRUE( testCtrl.Load( t2 ) );
+    CHECK_TRUE( testCtrl.Load( t3 ) );
+    CHECK_TRUE( testCtrl.Load( t4 ) );
+    CHECK_TRUE( testCtrl.Load( t5 ) );
 
     CHECK_TRUE( testCtrl.getTxCmd( 0 ).type == CmdType::cmd5 );
     CHECK_TRUE( testCtrl.getTxCmd( 1 ).type == CmdType::cmd2 );
@@ -105,12 +108,15 @@ TEST( cmdCtrl, txSort )
     CHECK_EQUAL( 4, testCtrl.getTxCmd( 2 ).token );
     CHECK_EQUAL( 5, testCtrl.getTxCmd( 3 ).token );
     CHECK_EQUAL( 6, testCtrl.getTxCmd( 0 ).token );
-}
 
+    std::cout << "Test t2" << std::endl;
+}
 
 TEST( cmdCtrl, emptyManager )
 {
     cmdCtrl testCtrl;
 
     CHECK_TRUE( testCtrl.Manager() );
+    
+    std::cout << "Test t3" << std::endl;
 }

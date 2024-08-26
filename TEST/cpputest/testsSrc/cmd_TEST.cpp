@@ -57,6 +57,8 @@ TEST( cmd, cmdPriority )
 
     CHECK_TRUE( Cmd::priorityGreaterEqual( cmd3, cmd2 ) );
     CHECK_TRUE( Cmd::prioritySmallerEqual( cmd1, cmd3 ) );
+
+    std::cout << "Test c1" << std::endl;
 }
 
 TEST( cmd, executeIdle )
@@ -66,6 +68,8 @@ TEST( cmd, executeIdle )
     CHECK_TRUE( ( CmdState::Idle == cmd.execute() ) );
     CHECK_TRUE( ( CmdState::Idle == cmd.execute() ) );
     CHECK_TRUE( ( CmdState::Idle == cmd.execute() ) );
+
+    std::cout << "Test c2" << std::endl;
 }
 
 TEST( cmd, executeType1 )
@@ -73,6 +77,8 @@ TEST( cmd, executeType1 )
     Cmd cmd{ CmdType::cmd1 };
 
     CHECK_TRUE( ( CmdState::Sent == cmd.execute() ) );
+
+    std::cout << "Test c3" << std::endl;
 }
 
 TEST( cmd, executeDelay )
@@ -91,7 +97,9 @@ TEST( cmd, executeDelay )
 
     auto deltaTimeMs = HAL_GetTick() - time1;
 
-    CHECK_TRUE( deltaTimeMs >= TEST_DelayMs &&  deltaTimeMs < ( TEST_DelayMs + 1 ));
+    CHECK_TRUE( deltaTimeMs == TEST_DelayMs );
+
+    std::cout << "Test c4" << std::endl;
 }
 
 TEST( cmd, donCb1 )
@@ -113,6 +121,8 @@ TEST( cmd, donCb1 )
     CHECK_TRUE( CmdState::Sent == cmd.execute() );
 
     CHECK_EQUAL( 1, localObj.getRes() );
+
+    std::cout << "Test c5" << std::endl;
 }
 
 TEST( cmd, donCb2 )
@@ -132,6 +142,8 @@ TEST( cmd, donCb2 )
     CHECK_TRUE( CmdState::Sent == cmd.execute() );
 
     CHECK_EQUAL( 1, localObj.getRes() );
+
+    std::cout << "Test c6" << std::endl;
 }
 
 TEST( cmd, waitForReplyState )
@@ -145,4 +157,6 @@ TEST( cmd, waitForReplyState )
     CHECK_TRUE( CmdState::Sent == cmd.execute() );
 
     CHECK_TRUE( CmdState::WaitForReply == cmd.execute() );
+
+    std::cout << "Test c7" << std::endl;
 }

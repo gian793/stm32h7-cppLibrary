@@ -46,7 +46,7 @@ bool cmdCtrl::Manager( void )
   * @retval True if command added successfully to tx buffer.
   */
 
-bool cmdCtrl::Tx( Cmd &xCmd )
+bool cmdCtrl::Load( Cmd &xCmd )
 {
     bool isCmdAdded = false;
 
@@ -79,49 +79,6 @@ bool cmdCtrl::Tx( Cmd &xCmd )
     }      
 
     stm32_lock_release( &cmdLock );
-
-    return isCmdAdded;
-}
-
-
-
-/**
-  * @brief  Receive a command.
-  * @param  Command received.
-  * @retval True if command added successfully to rx buffer.
-  */
-
-bool cmdCtrl::Rx( Cmd &xCmd )
-{
-    bool isCmdAdded = false;
-
-    stm32_lock_acquire( &cmdLock );
-
-    auto idx = txCnt;
-
-    while( idx > 0 )
-    {
-        --idx;
-
-        if( txBuffer[ idx ].type  == xCmd.type && 
-            txBuffer[ idx ].token == xCmd.token )
-        {
-
-        }
-    }
-
-    // if( rxCnt < rxBuffer.max_size() ) 
-    // {
-    //     /* Token already set by the sender. */
-    //     rxBuffer[ rxCnt++ ] = xCmd; 
-
-    //     /* High priority cmds first. */
-    //     std::sort( rxBuffer.begin(), rxBuffer.begin() + rxCnt, Cmd::prioritySmallerEqual );
-
-    //     isCmdAdded = true;
-    // }
-
-    stm32_lock_release( &cmdLock );        
 
     return isCmdAdded;
 }

@@ -18,7 +18,7 @@ extern "C"
 #include "cmdConfig.h"
 #include "cmd.h"
 
-class myObj: public cmdObj {
+class myObj: public CmdObj {
     public:
         void send( void ) override { res++; };
 

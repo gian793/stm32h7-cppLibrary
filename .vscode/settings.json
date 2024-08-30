@@ -13,6 +13,14 @@
         "charconv": "cpp",
         "complex": "cpp",
         "variant": "cpp",
-        "ostream": "cpp"
+        "ostream": "cpp",
+        "atomic": "cpp",
+        "random": "cpp",
+        "format": "cpp",
+        "istream": "cpp",
+        "limits": "cpp",
+        "mutex": "cpp",
+        "sstream": "cpp",
+        "streambuf": "cpp"
     }
 }

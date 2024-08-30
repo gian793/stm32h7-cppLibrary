@@ -20,7 +20,7 @@
   * @retval True if any command is handled.
   */
 
-bool cmdCtrl::Manager( void )
+bool cmdCtrl::manager( void )
 {
     stm32_lock_acquire( &cmdLock );
 
@@ -30,7 +30,7 @@ bool cmdCtrl::Manager( void )
     while( idx > 0 )
     {
         --idx;
-        txBuffer[ idx ].execute(); 
+        cmdBuffer[ idx ].execute(); 
     }
 
     stm32_lock_release( &cmdLock );
@@ -39,14 +39,21 @@ bool cmdCtrl::Manager( void )
 }
 
 
-
 /**
   * @brief  Transmit a command.
   * @param  Command to be transmitted.
   * @retval True if command added successfully to tx buffer.
   */
 
-bool cmdCtrl::Load( Cmd &xCmd )
+bool cmdCtrl::load( CmdType   cmdType, 
+                    CmdObj*   pCmdObj, 
+                    uint32_t  cmdToken,
+                    CmdType   cmdReplyType,
+                    PrioLevel cmdPrioLevel, 
+                    uint32_t  cmdRetryNr, 
+                    uint32_t  cmdTimeoutMs, 
+                    uint32_t  cmdPeriodMs, 
+                    uint32_t  cmdDelayMs )
 {
     bool isCmdAdded = false;
 
@@ -59,21 +66,21 @@ bool cmdCtrl::Load( Cmd &xCmd )
         --idx;
     
         /* Is this a reply? */
-        if( txBuffer[ idx ].type  == xCmd.type && 
-            txBuffer[ idx ].token == xCmd.token )
+        if( cmdBuffer[ idx ].type  == cmdType && 
+            cmdBuffer[ idx ].token == cmdToken)
         {
-            txBuffer[ idx ].replied();
+            cmdBuffer[ idx ].replied();
         }
     }
 
-    if( txCnt < txBuffer.max_size() ) 
+    if( txCnt < cmdBuffer.max_size() ) 
     {
-        xCmd.init( ++nextToken );
+        uint32_t token = cmdToken == 0 ?  ++nextToken : cmdToken;
 
-        txBuffer[ txCnt++ ] = xCmd;
+        cmdBuffer[ txCnt++ ].set( cmdType, pCmdObj, token, cmdReplyType, cmdPrioLevel, cmdRetryNr, cmdTimeoutMs, cmdPeriodMs, cmdDelayMs );
 
         /* Low priority cmds first. */
-        std::sort( txBuffer.begin(), txBuffer.begin() + txCnt, Cmd::prioritySmallerEqual );
+        std::sort( cmdBuffer.begin(), cmdBuffer.begin() + txCnt, Cmd::prioritySmallerEqual );
 
         isCmdAdded = true;
     }      

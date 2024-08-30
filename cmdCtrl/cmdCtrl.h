@@ -15,13 +15,24 @@ class cmdCtrl
 
         cmdCtrl() { resetTxBuf(); }
 
-        bool Manager( void );
+        bool manager( void );
 
-        bool Load( Cmd &xCmd );
+        bool load(  
+                    CmdType   cmdType, 
+                    CmdObj*   pCmdObj, 
+                    uint32_t  cmdToken     = 0,
+
+                    CmdType   cmdReplyType = CmdType::noCmd, 
+                    
+                    PrioLevel cmdPrioLevel = PrioLevel::low, 
+                    uint32_t  cmdRetryNr   = cmdDefaultRetryNr, 
+                    uint32_t  cmdTimeoutMs = cmdDefaultTimeoutMs, 
+                    uint32_t  cmdPeriodMs  = cmdDefaultPeriodMs, 
+                    uint32_t  cmdDelayMs   = cmdDefaultDelayMs  );
 
         //void RemoveCmd( uint32_t token );
 
-        Cmd getTxCmd( uint32_t cmdIdx )  { return txBuffer[ cmdIdx ]; }
+        Cmd getTxCmd( uint32_t cmdIdx )  { return cmdBuffer[ cmdIdx ]; }
 
         uint32_t getTxCnt( void ) { return txCnt; } 
 
@@ -29,14 +40,14 @@ class cmdCtrl
 
         LockingData_t cmdLock;
 
-        std::array<Cmd, cmdBufferSize> txBuffer;    /* Out-going commands. */
+        std::array<Cmd, cmdBufferSize> cmdBuffer;    /* Out-going commands. */
         std::array<uint32_t, cmdBufferSize> prioBuffer;    /* In-coming commands or replies to out-going commands. */
 
         uint32_t txCnt{0};                        /* Number of cmds to send. */
 
         uint32_t nextToken{0};
 
-        void resetTxBuf( void ) { for( Cmd &c: txBuffer ) { c.reset(); } }
+        void resetTxBuf( void ) { for( Cmd &c: cmdBuffer ) { c.reset(); } }
 };
 
 /*---------------------------------------------------------------------------*/

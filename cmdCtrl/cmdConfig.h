@@ -11,7 +11,7 @@
 
 constexpr uint32_t cmdBufferSize = 16;             /* Channel size. */
 
-constexpr uint32_t cmdDefaultTimeoutMs = 1000;
+constexpr uint32_t cmdDefaultTimeoutMs = 50;
 
 constexpr uint32_t cmdDefaultPeriodMs = 0;
 

@@ -24,13 +24,18 @@ bool cmdCtrl::manager( void )
 {
     stm32_lock_acquire( &cmdLock );
 
-    /* Commands Tx. */
-    auto idx = txCnt;
+    auto i = cnt;
 
-    while( idx > 0 )
+    while( --i >= 0 )
     {
-        --idx;
-        cmdBuffer[ idx ].execute(); 
+        auto idx = prioBuffer[ i ];
+
+        if( cmdBuffer[ idx ].execute() == CmdState::Done )
+        {
+            cmdBuffer[ idx ].reset();
+
+            freeIndex( i ); 
+        }
     }
 
     stm32_lock_release( &cmdLock );
@@ -40,7 +45,7 @@ bool cmdCtrl::manager( void )
 
 
 /**
-  * @brief  Transmit a command.
+  * @brief  Load a command to be executed.
   * @param  Command to be transmitted.
   * @retval True if command added successfully to tx buffer.
   */
@@ -53,37 +58,57 @@ bool cmdCtrl::load( CmdType   cmdType,
                     uint32_t  cmdRetryNr, 
                     uint32_t  cmdTimeoutMs, 
                     uint32_t  cmdPeriodMs, 
-                    uint32_t  cmdDelayMs )
+                    uint32_t  cmdDelayMs,
+                    bool      isReply )
 {
     bool isCmdAdded = false;
 
     stm32_lock_acquire( &cmdLock );
 
-    auto idx = txCnt;
+    /* Is there still place in the buffer? */
+    if( cnt < cmdBuffer.max_size() ) 
+    {                
+        /* Get next free index in the command array. */
+        auto idx = idxBuffer[ cnt ];
 
-    while( idx > 0 )
-    {
-        --idx;
-    
-        /* Is this a reply? */
-        if( cmdBuffer[ idx ].type  == cmdType && 
-            cmdBuffer[ idx ].token == cmdToken)
-        {
-            cmdBuffer[ idx ].replied();
-        }
-    }
+        uint32_t token = cmdToken == 0 ? ++nextToken : cmdToken;
 
-    if( txCnt < cmdBuffer.max_size() ) 
-    {
-        uint32_t token = cmdToken == 0 ?  ++nextToken : cmdToken;
+        cmdBuffer[ idx ].set( cmdType, pCmdObj, token, cmdReplyType, cmdPrioLevel, cmdRetryNr, cmdTimeoutMs, cmdPeriodMs, cmdDelayMs );
 
-        cmdBuffer[ txCnt++ ].set( cmdType, pCmdObj, token, cmdReplyType, cmdPrioLevel, cmdRetryNr, cmdTimeoutMs, cmdPeriodMs, cmdDelayMs );
+        prioBuffer[ cnt++ ] = idx;
 
         /* Low priority cmds first. */
-        std::sort( cmdBuffer.begin(), cmdBuffer.begin() + txCnt, Cmd::prioritySmallerEqual );
+        for( auto i = cnt - 1; i > 0; --i )
+        {
+            if( cmdBuffer[ prioBuffer[ i ] ].priority > cmdBuffer[ prioBuffer[ i - 1 ] ].priority )
+            {
+                break;    /* Exit. */
+            }
+            else
+            {
+                auto tmpIdx = prioBuffer[ i ];
 
-        isCmdAdded = true;
-    }      
+                prioBuffer[ i ] = prioBuffer[ i - 1 ];
+
+                prioBuffer[ i - 1 ] = tmpIdx;
+            }
+        }
+
+        if( isReply )
+        {
+            for( Cmd &cmd: cmdBuffer ) 
+            { 
+                if( ( cmd.token == cmdToken ) && ( cmd.replyType ==  cmdType ) )
+                {
+                    cmd.replied();
+
+                    break;
+                }
+            }
+        }
+
+        isCmdAdded = true;           
+    } 
 
     stm32_lock_release( &cmdLock );
 

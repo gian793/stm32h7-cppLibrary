@@ -9,45 +9,75 @@
 
 /*---------------------------------------------------------------------------*/
 
+
+
+/*---------------------------------------------------------------------------*/
+
 class cmdCtrl
 {
     public:
 
-        cmdCtrl() { resetTxBuf(); }
+        cmdCtrl() { reset(); }
 
         bool manager( void );
 
         bool load(  
                     CmdType   cmdType, 
                     CmdObj*   pCmdObj, 
-                    uint32_t  cmdToken     = 0,
+                    uint32_t  cmdToken = 0,
 
                     CmdType   cmdReplyType = CmdType::noCmd, 
-                    
                     PrioLevel cmdPrioLevel = PrioLevel::low, 
                     uint32_t  cmdRetryNr   = cmdDefaultRetryNr, 
                     uint32_t  cmdTimeoutMs = cmdDefaultTimeoutMs, 
                     uint32_t  cmdPeriodMs  = cmdDefaultPeriodMs, 
-                    uint32_t  cmdDelayMs   = cmdDefaultDelayMs  );
+                    uint32_t  cmdDelayMs   = cmdDefaultDelayMs,  
+                    
+                    bool isReply = false );
 
-        //void RemoveCmd( uint32_t token );
+        //bool removeCmd( uint32_t token );
 
-        Cmd getTxCmd( uint32_t cmdIdx )  { return cmdBuffer[ cmdIdx ]; }
+        uint32_t getCmdCnt( void ) { return cnt; } 
 
-        uint32_t getTxCnt( void ) { return txCnt; } 
+        //uint32_t getFreeIdxCnt( void ) { return ( cmdBufferSize - cnt ); }
 
     private:
 
         LockingData_t cmdLock;
 
-        std::array<Cmd, cmdBufferSize> cmdBuffer;    /* Out-going commands. */
-        std::array<uint32_t, cmdBufferSize> prioBuffer;    /* In-coming commands or replies to out-going commands. */
+        std::array<Cmd,      cmdBufferSize> cmdBuffer;  /* In-coming commands or replies to out-going commands. */
+        std::array<uint32_t, cmdBufferSize> prioBuffer; /* Increasing priority order, index=0 has lowest priority. */
+        std::array<uint32_t, cmdBufferSize> idxBuffer;  /* Next command free index. */
 
-        uint32_t txCnt{0};                        /* Number of cmds to send. */
+        uint32_t cnt{0};                                /* Number of commands to execute. */
+
+        uint32_t nextIdx{0};                            /* Index of the next command to load. */
 
         uint32_t nextToken{0};
 
-        void resetTxBuf( void ) { for( Cmd &c: cmdBuffer ) { c.reset(); } }
+        void reset( void ) 
+        { 
+            for( uint32_t i = 0; i < cmdBufferSize; ++i )
+            {
+                cmdBuffer[ i ].reset();
+
+                idxBuffer[ i ] = i;
+            }  
+        }
+
+        Cmd getCmd( uint32_t cmdIdx )  { return cmdBuffer[ cmdIdx ]; }
+
+        void freeIndex( uint32_t idx ) 
+        { 
+            /* Remove idx from priority buffer. */
+            for( auto i = idx; i < cnt - 1; ++i )   
+            {
+                prioBuffer[ i ] = prioBuffer[ i + 1 ];
+            }
+
+            /* Add idx to available index buffer. */
+            idxBuffer[ --cnt ] = idx;
+        }; 
 };
 
 /*---------------------------------------------------------------------------*/

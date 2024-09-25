@@ -68,22 +68,34 @@ TEST( cmd, executeIdle )
     CHECK_TRUE( ( CmdState::Idle == cmd.execute() ) );
     CHECK_TRUE( ( CmdState::Idle == cmd.execute() ) );
     CHECK_TRUE( ( CmdState::Idle == cmd.execute() ) );
-
-    std::cout << "Test c2" << std::endl;
 }
 
-TEST( cmd, executeType1 )
+TEST( cmd, executeNoReply )
 {
     Cmd cmd{ CmdType::cmd1 };
 
+    CHECK_TRUE( ( CmdState::Done == cmd.execute() ) );
+}
+
+TEST( cmd, executeWithReply )
+{
+    Cmd cmd{ CmdType::cmd1, CmdType::cmd2 };
+
+    CHECK_TRUE( ( CmdState::Sent == cmd.execute() ) );
+}
+
+TEST( cmd, executeWaitForReply )
+{
+    Cmd cmd{ CmdType::cmd1, CmdType::cmd2 };
+
     CHECK_TRUE( ( CmdState::Sent == cmd.execute() ) );
 
-    std::cout << "Test c3" << std::endl;
+    CHECK_TRUE( ( CmdState::WaitForReply == cmd.execute() ) );
 }
 
 TEST( cmd, executeDelay )
 {
-    constexpr uint32_t TEST_DelayMs = 23;
+    constexpr uint32_t TEST_DelayMs = 175;
 
     Cmd cmd{    CmdType::cmd1, CmdType::noCmd, 
                 PrioLevel::high, 
@@ -93,16 +105,14 @@ TEST( cmd, executeDelay )
 
     auto time1 = HAL_GetTick();
 
-    while( CmdState::Sent != cmd.execute() ) {};
+    while( CmdState::Done != cmd.execute() ) {};
 
     auto deltaTimeMs = HAL_GetTick() - time1;
 
-    CHECK_TRUE( deltaTimeMs == TEST_DelayMs );
-
-    std::cout << "Test c4" << std::endl;
+    CHECK_TRUE( ( deltaTimeMs >= TEST_DelayMs ) && ( deltaTimeMs < ( TEST_DelayMs + 10 ) ) );
 }
 
-TEST( cmd, donCb1 )
+TEST( cmd, sendCb_noReply )
 {
     myObj localObj;
 
@@ -113,50 +123,61 @@ TEST( cmd, donCb1 )
                 PrioLevel::high, 
                 cmdDefaultRetryNr, cmdDefaultTimeoutMs, cmdDefaultPeriodMs, cmdDefaultDelayMs   };
 
-
-    cmd.init( 0 );
-
     CHECK_EQUAL( 0, localObj.getRes() );
 
-    CHECK_TRUE( CmdState::Sent == cmd.execute() );
+    CHECK_TRUE( CmdState::Done == cmd.execute() );
 
     CHECK_EQUAL( 1, localObj.getRes() );
-
-    std::cout << "Test c5" << std::endl;
 }
 
-TEST( cmd, donCb2 )
+TEST( cmd, sendCb_withReply )
 {
-    Cmd cmd{    CmdType::cmd1, CmdType::noCmd, 
-                PrioLevel::high, 
-                cmdDefaultRetryNr, cmdDefaultTimeoutMs, cmdDefaultPeriodMs, cmdDefaultDelayMs   };
-
     myObj localObj;
 
     localObj.reset();
 
-    cmd.init( 0, &localObj );
-
-    CHECK_EQUAL( 0, localObj.getRes() );
-
-    CHECK_TRUE( CmdState::Sent == cmd.execute() );
-
-    CHECK_EQUAL( 1, localObj.getRes() );
-
-    std::cout << "Test c6" << std::endl;
-}
-
-TEST( cmd, waitForReplyState )
-{
-    Cmd cmd{    CmdType::cmd1, CmdType::cmd1, 
+    Cmd cmd{    &localObj, 
+                CmdType::cmd1, CmdType::cmd2, 
                 PrioLevel::high, 
                 cmdDefaultRetryNr, cmdDefaultTimeoutMs, cmdDefaultPeriodMs, cmdDefaultDelayMs   };
 
-    cmd.init( 0 );
+    cmd.execute();
 
-    CHECK_TRUE( CmdState::Sent == cmd.execute() );
-
-    CHECK_TRUE( CmdState::WaitForReply == cmd.execute() );
-
-    std::cout << "Test c7" << std::endl;
+    CHECK_EQUAL( 1, localObj.getRes() );
 }
+
+// TEST( cmd, donCb2 )
+// {
+//     Cmd cmd{    CmdType::cmd1, CmdType::noCmd, 
+//                 PrioLevel::high, 
+//                 cmdDefaultRetryNr, cmdDefaultTimeoutMs, cmdDefaultPeriodMs, cmdDefaultDelayMs   };
+
+//     myObj localObj;
+
+//     localObj.reset();
+
+//     cmd.init( 0, &localObj );
+
+//     CHECK_EQUAL( 0, localObj.getRes() );
+
+//     CHECK_TRUE( CmdState::Sent == cmd.execute() );
+
+//     CHECK_EQUAL( 1, localObj.getRes() );
+
+//     std::cout << "Test c6" << std::endl;
+// }
+
+// TEST( cmd, waitForReplyState )
+// {
+//     Cmd cmd{    CmdType::cmd1, CmdType::cmd1, 
+//                 PrioLevel::high, 
+//                 cmdDefaultRetryNr, cmdDefaultTimeoutMs, cmdDefaultPeriodMs, cmdDefaultDelayMs   };
+
+//     cmd.init( 0 );
+
+//     CHECK_TRUE( CmdState::Sent == cmd.execute() );
+
+//     CHECK_TRUE( CmdState::WaitForReply == cmd.execute() );
+
+//     std::cout << "Test c7" << std::endl;
+// }

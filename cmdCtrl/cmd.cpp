@@ -23,13 +23,12 @@ CmdState Cmd::execute( void )
 {
     if( type != CmdType::noCmd )
     {
-        uint32_t timerMs = HAL_GetTick();
+        auto timerMs = HAL_GetTick();
 
         switch( state )
         {
-            case CmdState::Done:
-                state = CmdState::Idle;
             case CmdState::Idle:
+
                 if( ( timerMs - delayTimerMs ) >= delayMs )
                 {
                     delayTimerMs   = timerMs - delayTimerMs - delayMs;
@@ -37,26 +36,36 @@ CmdState Cmd::execute( void )
 
                     pObj->send();
 
-                    state = CmdState::Sent;
+                    state = ( replyType != CmdType::noCmd ) ? CmdState::Sent : CmdState::Done;
                 }
                 break; 
             
             case CmdState::Sent:
-                state = ( replyType != CmdType::noCmd ) ? CmdState::WaitForReply : CmdState::Done;
+                state = CmdState::WaitForReply;
+
             case CmdState::WaitForReply:
 
                 if( isReplied )
                 {
+                    pObj->reply();
+
                     state = CmdState::Done;
                 }
                 else if( ( timerMs - timeoutTimerMs ) >= timeoutMs )
                 {
+                    pObj->timeout();
+
                     state = CmdState::Timeout;
                 }
-                break; 
-            
+                break;
+
+            case CmdState::Done:
             case CmdState::Timeout:
-                break; 
+                if( periodMs > 0 )
+                {
+                    state = CmdState::Idle;
+                }
+                break;
 
             default:
                 break;

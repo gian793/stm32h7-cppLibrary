@@ -42,62 +42,64 @@ TEST( cmdCtrl, Init )
     CHECK_EQUAL( 0, testCtrl.getCmdCnt() );
 }
 
-// TEST( cmdCtrl, cmdCnt )
-// {
+TEST( cmdCtrl, cmdCnt )
+{
+     cmdCtrl testCtrl;
+     Cmd cmd; 
 
-//      cmdCtrl testCtrl;
-//      Cmd cmd; 
+     testCtrl.load( CmdType::cmd1, &testObj );
+     testCtrl.load( CmdType::cmd1, &testObj );
+     testCtrl.load( CmdType::cmd1, &testObj );
 
-//      testCtrl.load( CmdType::cmd1, &testObj );
-//      testCtrl.load( CmdType::cmd1, &testObj );
-//      testCtrl.load( CmdType::cmd1, &testObj );
+     CHECK_EQUAL( 3, testCtrl.getCmdCnt() );
+}
 
-//      CHECK_EQUAL( 3, testCtrl.getCmdCnt() );
+TEST( cmdCtrl, cmdNotAdded )
+{
+     cmdCtrl testCtrl;
+     Cmd cmd; 
 
-//      std::cout << "Test t1" << std::endl;
-// }
+     testCtrl.load( CmdType::cmd1, &testObj );
+     testCtrl.load( CmdType::noCmd, &testObj );
+     testCtrl.load( CmdType::cmd2, &testObj );
 
-// TEST( cmdCtrl, txSort )
-// {
+     CHECK_EQUAL( 2, testCtrl.getCmdCnt() );
+}
 
-//     Cmd t0{ CmdType::noCmd, 
-//             CmdType::noCmd, 
-//             PrioLevel::l3, 
-//             cmdDefaultRetryNr, cmdDefaultTimeoutMs, cmdDefaultPeriodMs, cmdDefaultDelayMs };
+TEST( cmdCtrl, txSort )
+{
+    Cmd c1{ CmdType::cmd1, 
+            CmdType::noCmd, 
+            PrioLevel::high, 
+            cmdDefaultRetryNr, cmdDefaultTimeoutMs, cmdDefaultPeriodMs, cmdDefaultDelayMs };
 
-//     Cmd t1{ CmdType::cmd1, 
-//             CmdType::noCmd, 
-//             PrioLevel::high, 
-//             cmdDefaultRetryNr, cmdDefaultTimeoutMs, cmdDefaultPeriodMs, cmdDefaultDelayMs };
+    Cmd c2{ CmdType::cmd2, 
+            CmdType::noCmd, 
+            PrioLevel::low, 
+            cmdDefaultRetryNr, cmdDefaultTimeoutMs, cmdDefaultPeriodMs, cmdDefaultDelayMs };
 
-//     Cmd t2{ CmdType::cmd2, 
-//             CmdType::noCmd, 
-//             PrioLevel::low, 
-//             cmdDefaultRetryNr, cmdDefaultTimeoutMs, cmdDefaultPeriodMs, cmdDefaultDelayMs };
+    Cmd c3{ CmdType::cmd3, 
+            CmdType::noCmd, 
+            PrioLevel::l2, 
+            cmdDefaultRetryNr, cmdDefaultTimeoutMs, cmdDefaultPeriodMs, cmdDefaultDelayMs };
 
-//     Cmd t3{ CmdType::cmd3, 
-//             CmdType::noCmd, 
-//             PrioLevel::l2, 
-//             cmdDefaultRetryNr, cmdDefaultTimeoutMs, cmdDefaultPeriodMs, cmdDefaultDelayMs };
-
-//     Cmd t4{ CmdType::cmd4, 
-//             CmdType::noCmd, 
-//             PrioLevel::l2, 
-//             cmdDefaultRetryNr, cmdDefaultTimeoutMs, cmdDefaultPeriodMs, cmdDefaultDelayMs };
+    Cmd c4{ CmdType::cmd4, 
+            CmdType::noCmd, 
+            PrioLevel::l2, 
+            cmdDefaultRetryNr, cmdDefaultTimeoutMs, cmdDefaultPeriodMs, cmdDefaultDelayMs };
     
-//     Cmd t5{ CmdType::cmd5, 
-//             CmdType::noCmd, 
-//             PrioLevel::low, 
-//             cmdDefaultRetryNr, cmdDefaultTimeoutMs, cmdDefaultPeriodMs, cmdDefaultDelayMs };
+    Cmd c5{ CmdType::cmd5, 
+            CmdType::noCmd, 
+            PrioLevel::low, 
+            cmdDefaultRetryNr, cmdDefaultTimeoutMs, cmdDefaultPeriodMs, cmdDefaultDelayMs };
 
-//     cmdCtrl testCtrl;
+    cmdCtrl testCtrl;
 
-//     CHECK_TRUE( testCtrl.load( t0 ) );
-//     CHECK_TRUE( testCtrl.load( t1 ) );
-//     CHECK_TRUE( testCtrl.load( t2 ) );
-//     CHECK_TRUE( testCtrl.load( t3 ) );
-//     CHECK_TRUE( testCtrl.load( t4 ) );
-//     CHECK_TRUE( testCtrl.load( t5 ) );
+//     CHECK_TRUE( testCtrl.load( c1 ) );
+//     CHECK_TRUE( testCtrl.load( c2 ) );
+//     CHECK_TRUE( testCtrl.load( c3 ) );
+//     CHECK_TRUE( testCtrl.load( c4 ) );
+//     CHECK_TRUE( testCtrl.load( c5 ) );
 
 //     CHECK_TRUE( testCtrl.getTxCmd( 0 ).type == CmdType::cmd5 );
 //     CHECK_TRUE( testCtrl.getTxCmd( 1 ).type == CmdType::cmd2 );
@@ -114,7 +116,7 @@ TEST( cmdCtrl, Init )
 //     CHECK_EQUAL( 6, testCtrl.getTxCmd( 0 ).token );
 
 //     std::cout << "Test t2" << std::endl;
-// }
+}
 
 // TEST( cmdCtrl, emptyManager )
 // {

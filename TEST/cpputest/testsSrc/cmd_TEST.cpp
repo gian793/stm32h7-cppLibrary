@@ -64,8 +64,6 @@ TEST( cmd, cmdPriority )
 
     CHECK_TRUE( Cmd::priorityGreaterEqual( cmd3, cmd2 ) );
     CHECK_TRUE( Cmd::prioritySmallerEqual( cmd1, cmd3 ) );
-
-    std::cout << "Test c1" << std::endl;
 }
 
 TEST( cmd, executeIdle )
@@ -116,7 +114,7 @@ TEST( cmd, executeDelay )
 
     auto deltaTimeMs = HAL_GetTick() - time1;
 
-    CHECK_TRUE( ( deltaTimeMs >= TEST_DelayMs ) && ( deltaTimeMs < ( TEST_DelayMs + 10 ) ) );
+    CHECK_TRUE( ( deltaTimeMs >= TEST_DelayMs ) && ( deltaTimeMs < ( TEST_DelayMs + 5 ) ) );
 }
 
 TEST( cmd, timeout )
@@ -129,9 +127,9 @@ TEST( cmd, timeout )
 
     CHECK_TRUE( CmdState::Sent == cmd.execute() );
 
-    while( CmdState::WaitForReply == cmd.execute() ) {}
+    while( cmd.execute() != CmdState::Timeout ) {}
 
-    CHECK_TRUE( CmdState::Timeout == cmd.execute() );
+    CHECK_TRUE( CmdState::Done == cmd.execute() );
 }
 
 TEST( cmd, sendCb_noReply )
@@ -204,6 +202,37 @@ TEST( cmd, timeoutCb )
     CHECK_EQUAL( 0, localObj.getReplyCnt() );
     CHECK_EQUAL( 1, localObj.getTimeoutCnt() );
 }
+
+TEST( cmd, executePeriod )
+{
+    constexpr uint32_t TEST_DelayMs  = 25;
+    constexpr uint32_t TEST_PeriodMs = 50;
+
+    Cmd cmd{    CmdType::cmd1, CmdType::noCmd, 
+                PrioLevel::high, 
+                cmdDefaultRetryNr, cmdDefaultTimeoutMs, TEST_PeriodMs, TEST_DelayMs   };
+
+    cmd.init( 0 );
+
+    /* Initial delay check. */
+    auto time = HAL_GetTick();
+    while( CmdState::Done != cmd.execute() ) {};
+    auto deltaTimeMs = HAL_GetTick() - time;
+    CHECK_TRUE( ( deltaTimeMs >= TEST_DelayMs ) && ( deltaTimeMs < ( TEST_DelayMs + 10 ) ) );
+
+    auto cycleNr = 5;
+
+    while( cycleNr-- > 0)
+    {
+        /* Period check. */
+        time = HAL_GetTick();
+        while( CmdState::Done != cmd.execute() ) {};
+        deltaTimeMs = HAL_GetTick() - time;
+
+        CHECK_TRUE( ( deltaTimeMs >= TEST_PeriodMs ) && ( deltaTimeMs < ( TEST_PeriodMs + 5 ) ) );
+    }
+}
+
 
 // TEST( cmd, donCb2 )
 // {

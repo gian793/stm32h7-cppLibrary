@@ -28,10 +28,16 @@ CmdState Cmd::execute( void )
         switch( state )
         {
             case CmdState::Idle:
-
                 if( ( timerMs - delayTimerMs ) >= delayMs )
                 {
-                    delayTimerMs   = timerMs - delayTimerMs - delayMs;
+                    if( periodMs > 0 )
+                    {   /* Compensation. */
+                        auto deltaMs = ( timerMs - delayTimerMs ) - delayMs;
+
+                        delayMs = ( periodMs > deltaMs ) ? ( periodMs - deltaMs ) : 0 ;
+                    }
+
+                    delayTimerMs   = timerMs;
                     timeoutTimerMs = timerMs;
 
                     pObj->send();
@@ -59,8 +65,10 @@ CmdState Cmd::execute( void )
                 }
                 break;
 
-            case CmdState::Done:
             case CmdState::Timeout:
+                state = CmdState::Done;
+
+            case CmdState::Done:
                 if( periodMs > 0 )
                 {
                     state = CmdState::Idle;

@@ -66,7 +66,7 @@ bool cmdCtrl::load( CmdType   cmdType,
     stm32_lock_acquire( &cmdLock );
 
     /* Is there still place in the buffer? */
-    if( cnt < cmdBuffer.max_size() ) 
+    if( ( cmdType != CmdType::noCmd ) && ( cnt < cmdBuffer.max_size() ) ) 
     {                
         /* Get next free index in the command array. */
         auto idx = idxBuffer[ cnt ];

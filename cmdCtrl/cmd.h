@@ -86,7 +86,6 @@ class Cmd {
                                             retry = 0; 
                                             isReplied = false;
                                             timeoutTimerMs = getTimerMs(); 
-                                            periodTimerMs  = getTimerMs(); 
                                             delayTimerMs   = getTimerMs();  }
 
         void init( uint32_t newToken, CmdObj* pObject )  {  init( newToken );
@@ -154,12 +153,12 @@ class Cmd {
 
         uint32_t  periodMs;
 
-        uint32_t  periodTimerMs;
+        //uint32_t  periodTimerMs;
 
 
         uint32_t  delayMs;
 
-        uint32_t  delayTimerMs;
+        uint32_t  delayTimerMs;         /* In case of peiodic command only the first time the delay is applied. */
         
 
         CmdState  state{ CmdState::Idle };

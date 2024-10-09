@@ -93,11 +93,10 @@ class Cmd {
         
         void set(   CmdType   cmdType,
                     CmdObj*   pObject, 
+                    PrioLevel cmdPrioLevel = PrioLevel::low,
+                    CmdType   cmdReplyType = CmdType::noCmd,
                     uint32_t  cmdToken     = 0,
 
-                    CmdType   cmdReplyType = CmdType::noCmd,
-                    
-                    PrioLevel cmdPrioLevel = PrioLevel::low,
                     uint32_t  cmdRetryNr   = cmdDefaultRetryNr,
                     uint32_t  cmdTimeoutMs = cmdDefaultTimeoutMs,
                     uint32_t  cmdPeriodMs  = cmdDefaultPeriodMs,
@@ -114,17 +113,19 @@ class Cmd {
             delayMs   = cmdDelayMs;
         }
 
-        static bool priorityGreaterEqual( const Cmd &lCmd, const Cmd &rCmd ) { return lCmd.priority >= rCmd.priority; } const
+        // static bool priorityGreaterEqual( const Cmd &lCmd, const Cmd &rCmd ) { return lCmd.priority >= rCmd.priority; } const
 
-        static bool prioritySmallerEqual( const Cmd &lCmd, const Cmd &rCmd ) { return lCmd.priority <= rCmd.priority; } const
+        // static bool prioritySmallerEqual( const Cmd &lCmd, const Cmd &rCmd ) { return lCmd.priority <= rCmd.priority; } const
 
-        static bool priorityEqual( const Cmd &lCmd, const Cmd &rCmd ) { return lCmd.priority == rCmd.priority; } const                            
+        // static bool priorityEqual( const Cmd &lCmd, const Cmd &rCmd ) { return lCmd.priority == rCmd.priority; } const                            
                                             
         void reset( void ) { type = CmdType::noCmd; isReplied = false; }
 
         CmdState execute( void );
 
         void replied( void ) { isReplied = ( replyType != CmdType::noCmd ); } /* Flag can be set only if a reply is expected. */
+
+        bool isPeriodic( void ) const { return ( periodMs > 0 ); }
 
         CmdType  type;
 

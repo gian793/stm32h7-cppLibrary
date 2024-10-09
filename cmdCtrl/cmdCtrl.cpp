@@ -20,27 +20,37 @@
   * @retval True if any command is handled.
   */
 
-bool cmdCtrl::manager( void )
+#include <iostream>
+#include <cstring>
+
+uint32_t cmdCtrl::manager( void )
 {
+    uint32_t isCmdDoneCnt = 0;
+
     stm32_lock_acquire( &cmdLock );
 
     auto i = cnt;
 
-    while( --i >= 0 )
+    while( i > 0 )
     {
-        auto idx = prioBuffer[ i ];
+        auto idx = prioBuffer[ --i ];
 
         if( cmdBuffer[ idx ].execute() == CmdState::Done )
         {
-            cmdBuffer[ idx ].reset();
+            ++isCmdDoneCnt;
 
-            freeIndex( i ); 
+            if( cmdBuffer[ idx ].isPeriodic() == false )
+            {
+                cmdBuffer[ idx ].reset();
+
+                freeIndex( i ); 
+            }
         }
     }
 
     stm32_lock_release( &cmdLock );
 
-    return true;
+    return isCmdDoneCnt;
 }
 
 
@@ -52,9 +62,9 @@ bool cmdCtrl::manager( void )
 
 bool cmdCtrl::load( CmdType   cmdType, 
                     CmdObj*   pCmdObj, 
+                    PrioLevel cmdPrioLevel,
+                    CmdType   cmdReplyType, 
                     uint32_t  cmdToken,
-                    CmdType   cmdReplyType,
-                    PrioLevel cmdPrioLevel, 
                     uint32_t  cmdRetryNr, 
                     uint32_t  cmdTimeoutMs, 
                     uint32_t  cmdPeriodMs, 
@@ -73,7 +83,7 @@ bool cmdCtrl::load( CmdType   cmdType,
 
         uint32_t token = cmdToken == 0 ? ++nextToken : cmdToken;
 
-        cmdBuffer[ idx ].set( cmdType, pCmdObj, token, cmdReplyType, cmdPrioLevel, cmdRetryNr, cmdTimeoutMs, cmdPeriodMs, cmdDelayMs );
+        cmdBuffer[ idx ].set( cmdType, pCmdObj, cmdPrioLevel, cmdReplyType, token, cmdRetryNr, cmdTimeoutMs, cmdPeriodMs, cmdDelayMs );
 
         prioBuffer[ cnt++ ] = idx;
 

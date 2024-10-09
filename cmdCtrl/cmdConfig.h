@@ -43,6 +43,7 @@ enum class PrioLevel : int {    l0,
                                 Max,
 
                                 /* helpers. */
+                                invalid = -1,
                                 low = 0,
                                 high = Max - 1,
                                 medium = (low+high)/2,

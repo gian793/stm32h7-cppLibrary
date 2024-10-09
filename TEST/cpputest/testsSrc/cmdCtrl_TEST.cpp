@@ -18,21 +18,52 @@ extern "C"
 #include "cmd.h"
 #include "cmdCtrl.h"
 
+class myObj: public CmdObj {
+    public:
+        void send( void ) override { sendCnt++; };
+        void reply( void ) override { replyCnt++; };
+        void timeout( void ) override { timeoutCnt++; };
 
+        uint32_t getSendCnt( void ) { return sendCnt; }
+        uint32_t getReplyCnt( void ) { return replyCnt; }
+        uint32_t getTimeoutCnt( void ) { return timeoutCnt; }
+
+        void reset( void ) { sendCnt = 0; replyCnt = 0; timeoutCnt = 0; }
+
+    private:
+        uint32_t sendCnt = 0;
+        uint32_t replyCnt = 0;
+        uint32_t timeoutCnt = 0;
+};
+
+uint32_t prioIdx{0};
+std::array<char, cmdBufferSize> prioritySeq;
+
+class myObj1: public CmdObj {public: void send( void ) override { prioritySeq[ prioIdx++] = '1'; }; };
+class myObj2: public CmdObj {public: void send( void ) override { prioritySeq[ prioIdx++] = '2'; }; };
+class myObj3: public CmdObj {public: void send( void ) override { prioritySeq[ prioIdx++] = '3'; }; };
+class myObj4: public CmdObj {public: void send( void ) override { prioritySeq[ prioIdx++] = '4'; }; };
+class myObj5: public CmdObj {public: void send( void ) override { prioritySeq[ prioIdx++] = '5'; }; };
 
 TEST_GROUP( cmdCtrl )
 {
-        CmdObj testObj;
-        
-        void setup()
-        {	
-                MemoryLeakWarningPlugin::saveAndDisableNewDeleteOverloads();
-        }
+    myObj testObj;
 
-        void teardown()
-        {
-                MemoryLeakWarningPlugin::restoreNewDeleteOverloads();
-        }
+    myObj1 obj1;
+    myObj2 obj2;
+    myObj3 obj3;
+    myObj4 obj4;
+    myObj5 obj5;
+
+    void setup()
+    {	
+            MemoryLeakWarningPlugin::saveAndDisableNewDeleteOverloads();
+    }
+
+    void teardown()
+    {
+            MemoryLeakWarningPlugin::restoreNewDeleteOverloads();
+    }
 };
 
 TEST( cmdCtrl, Init )
@@ -44,85 +75,50 @@ TEST( cmdCtrl, Init )
 
 TEST( cmdCtrl, cmdCnt )
 {
-     cmdCtrl testCtrl;
-     Cmd cmd; 
+    cmdCtrl testCtrl;
+    Cmd cmd; 
 
-     testCtrl.load( CmdType::cmd1, &testObj );
-     testCtrl.load( CmdType::cmd1, &testObj );
-     testCtrl.load( CmdType::cmd1, &testObj );
+    testCtrl.load( CmdType::cmd1, &testObj );
+    testCtrl.load( CmdType::cmd1, &testObj );
+    testCtrl.load( CmdType::cmd1, &testObj );
 
-     CHECK_EQUAL( 3, testCtrl.getCmdCnt() );
+    CHECK_EQUAL( 3, testCtrl.getCmdCnt() );
 }
 
 TEST( cmdCtrl, cmdNotAdded )
 {
-     cmdCtrl testCtrl;
-     Cmd cmd; 
+    cmdCtrl testCtrl;
+    Cmd cmd; 
 
-     testCtrl.load( CmdType::cmd1, &testObj );
-     testCtrl.load( CmdType::noCmd, &testObj );
-     testCtrl.load( CmdType::cmd2, &testObj );
+    testCtrl.load( CmdType::cmd1, &testObj );
+    testCtrl.load( CmdType::noCmd, &testObj );
+    testCtrl.load( CmdType::cmd2, &testObj );
 
-     CHECK_EQUAL( 2, testCtrl.getCmdCnt() );
+    CHECK_EQUAL( 2, testCtrl.getCmdCnt() );
 }
 
 TEST( cmdCtrl, txSort )
 {
-    Cmd c1{ CmdType::cmd1, 
-            CmdType::noCmd, 
-            PrioLevel::high, 
-            cmdDefaultRetryNr, cmdDefaultTimeoutMs, cmdDefaultPeriodMs, cmdDefaultDelayMs };
-
-    Cmd c2{ CmdType::cmd2, 
-            CmdType::noCmd, 
-            PrioLevel::low, 
-            cmdDefaultRetryNr, cmdDefaultTimeoutMs, cmdDefaultPeriodMs, cmdDefaultDelayMs };
-
-    Cmd c3{ CmdType::cmd3, 
-            CmdType::noCmd, 
-            PrioLevel::l2, 
-            cmdDefaultRetryNr, cmdDefaultTimeoutMs, cmdDefaultPeriodMs, cmdDefaultDelayMs };
-
-    Cmd c4{ CmdType::cmd4, 
-            CmdType::noCmd, 
-            PrioLevel::l2, 
-            cmdDefaultRetryNr, cmdDefaultTimeoutMs, cmdDefaultPeriodMs, cmdDefaultDelayMs };
-    
-    Cmd c5{ CmdType::cmd5, 
-            CmdType::noCmd, 
-            PrioLevel::low, 
-            cmdDefaultRetryNr, cmdDefaultTimeoutMs, cmdDefaultPeriodMs, cmdDefaultDelayMs };
-
     cmdCtrl testCtrl;
 
-//     CHECK_TRUE( testCtrl.load( c1 ) );
-//     CHECK_TRUE( testCtrl.load( c2 ) );
-//     CHECK_TRUE( testCtrl.load( c3 ) );
-//     CHECK_TRUE( testCtrl.load( c4 ) );
-//     CHECK_TRUE( testCtrl.load( c5 ) );
+    CHECK_TRUE( testCtrl.load( CmdType::cmd1, &obj1, PrioLevel::high ) );
+    CHECK_TRUE( testCtrl.load( CmdType::cmd1, &obj2, PrioLevel::low ) );
+    CHECK_TRUE( testCtrl.load( CmdType::cmd1, &obj3, PrioLevel::l2 ) );
+    CHECK_TRUE( testCtrl.load( CmdType::cmd1, &obj4, PrioLevel::l2 ) );
+    CHECK_TRUE( testCtrl.load( CmdType::cmd1, &obj5, PrioLevel::l3 ) );
 
-//     CHECK_TRUE( testCtrl.getTxCmd( 0 ).type == CmdType::cmd5 );
-//     CHECK_TRUE( testCtrl.getTxCmd( 1 ).type == CmdType::cmd2 );
-//     CHECK_TRUE( testCtrl.getTxCmd( 2 ).type == CmdType::cmd3 );
-//     CHECK_TRUE( testCtrl.getTxCmd( 3 ).type == CmdType::cmd4 );
-//     CHECK_TRUE( testCtrl.getTxCmd( 4 ).type == CmdType::noCmd );
-//     CHECK_TRUE( testCtrl.getTxCmd( 5 ).type == CmdType::cmd1 );
+    testCtrl.manager();
 
-//     CHECK_EQUAL( 1, testCtrl.getTxCmd( 4 ).token );
-//     CHECK_EQUAL( 2, testCtrl.getTxCmd( 5 ).token );
-//     CHECK_EQUAL( 3, testCtrl.getTxCmd( 1 ).token );
-//     CHECK_EQUAL( 4, testCtrl.getTxCmd( 2 ).token );
-//     CHECK_EQUAL( 5, testCtrl.getTxCmd( 3 ).token );
-//     CHECK_EQUAL( 6, testCtrl.getTxCmd( 0 ).token );
-
-//     std::cout << "Test t2" << std::endl;
+    CHECK_TRUE( prioritySeq[0] == '1' );
+    CHECK_TRUE( prioritySeq[1] == '5' );
+    CHECK_TRUE( prioritySeq[2] == '3' );
+    CHECK_TRUE( prioritySeq[3] == '4' );
+    CHECK_TRUE( prioritySeq[4] == '2' );
 }
 
-// TEST( cmdCtrl, emptyManager )
-// {
-//     cmdCtrl testCtrl;
+TEST( cmdCtrl, emptyManager )
+{
+    cmdCtrl testCtrl;
 
-//     CHECK_TRUE( testCtrl.manager() );
-    
-//     std::cout << "Test t3" << std::endl;
-// }
+   CHECK_TRUE( testCtrl.manager() == 0 );
+}

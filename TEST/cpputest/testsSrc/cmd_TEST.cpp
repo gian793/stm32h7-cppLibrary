@@ -49,22 +49,22 @@ TEST_GROUP( cmd )
     }
 };
 
-TEST( cmd, cmdPriority )
-{
-    Cmd cmd1;   /* Default low priority. */
-    Cmd cmd2;
+// TEST( cmd, cmdPriority )
+// {
+//     Cmd cmd1;   /* Default low priority. */
+//     Cmd cmd2;
 
-    Cmd cmd3{   CmdType::noCmd, CmdType::noCmd, 
-				PrioLevel::high, 
-				cmdDefaultRetryNr, cmdDefaultTimeoutMs, cmdDefaultPeriodMs, cmdDefaultDelayMs   };
+//     Cmd cmd3{   CmdType::noCmd, CmdType::noCmd, 
+// 				PrioLevel::high, 
+// 				cmdDefaultRetryNr, cmdDefaultTimeoutMs, cmdDefaultPeriodMs, cmdDefaultDelayMs   };
 
-	CHECK_TRUE( Cmd::priorityGreaterEqual( cmd1, cmd2 ) );
-    CHECK_TRUE( Cmd::priorityEqual( cmd1, cmd2 ) );
-    CHECK_TRUE( Cmd::prioritySmallerEqual( cmd1, cmd2 ) );
+// 	CHECK_TRUE( Cmd::priorityGreaterEqual( cmd1, cmd2 ) );
+//     CHECK_TRUE( Cmd::priorityEqual( cmd1, cmd2 ) );
+//     CHECK_TRUE( Cmd::prioritySmallerEqual( cmd1, cmd2 ) );
 
-    CHECK_TRUE( Cmd::priorityGreaterEqual( cmd3, cmd2 ) );
-    CHECK_TRUE( Cmd::prioritySmallerEqual( cmd1, cmd3 ) );
-}
+//     CHECK_TRUE( Cmd::priorityGreaterEqual( cmd3, cmd2 ) );
+//     CHECK_TRUE( Cmd::prioritySmallerEqual( cmd1, cmd3 ) );
+// }
 
 TEST( cmd, executeIdle )
 {

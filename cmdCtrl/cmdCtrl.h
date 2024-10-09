@@ -19,15 +19,15 @@ class cmdCtrl
 
         cmdCtrl() { reset(); }
 
-        bool manager( void );
+        uint32_t manager( void );
 
         bool load(  
                     CmdType   cmdType, 
                     CmdObj*   pCmdObj, 
-                    uint32_t  cmdToken = 0,
-
-                    CmdType   cmdReplyType = CmdType::noCmd, 
                     PrioLevel cmdPrioLevel = PrioLevel::low, 
+                    CmdType   cmdReplyType = CmdType::noCmd, 
+                    uint32_t  cmdToken     = 0,
+
                     uint32_t  cmdRetryNr   = cmdDefaultRetryNr, 
                     uint32_t  cmdTimeoutMs = cmdDefaultTimeoutMs, 
                     uint32_t  cmdPeriodMs  = cmdDefaultPeriodMs, 

@@ -8,6 +8,7 @@ extern "C"
 	/*
 	 * Add your c-only include files here
 	 */
+    #include "stm32h7xx_hal.h"
 }
 
 #include <random>
@@ -76,7 +77,6 @@ TEST( cmdCtrl, Init )
 TEST( cmdCtrl, cmdCnt )
 {
     cmdCtrl testCtrl;
-    Cmd cmd; 
 
     testCtrl.load( CmdType::cmd1, &testObj );
     testCtrl.load( CmdType::cmd1, &testObj );
@@ -88,7 +88,6 @@ TEST( cmdCtrl, cmdCnt )
 TEST( cmdCtrl, cmdNotAdded )
 {
     cmdCtrl testCtrl;
-    Cmd cmd; 
 
     testCtrl.load( CmdType::cmd1, &testObj );
     testCtrl.load( CmdType::noCmd, &testObj );
@@ -121,4 +120,40 @@ TEST( cmdCtrl, emptyManager )
     cmdCtrl testCtrl;
 
    CHECK_TRUE( testCtrl.manager() == 0 );
+}
+
+TEST( cmdCtrl, notEmptyManager )
+{
+    cmdCtrl testCtrl;
+
+    testCtrl.load( CmdType::cmd1, &testObj );
+    testCtrl.load( CmdType::cmd1, &testObj );
+    testCtrl.load( CmdType::cmd2, &testObj );
+
+   CHECK_TRUE( testCtrl.manager() == 3 );
+}
+
+TEST( cmdCtrl, periodicManager )
+{
+    
+    
+    first check that periodic commands remoaininthe ctrl array
+
+
+
+    constexpr uint32_t TEST_PeriodMs = 10;
+
+    cmdCtrl testCtrl;
+
+    testCtrl.load( CmdType::cmd1, &testObj );
+    testCtrl.load( CmdType::cmd1, &testObj, PrioLevel::high, CmdType::noCmd, cmdDefaultRetryNr, cmdDefaultTimeoutMs, TEST_PeriodMs, cmdDefaultDelayMs );
+    testCtrl.load( CmdType::cmd2, &testObj );
+
+    CHECK_TRUE( testCtrl.manager() == 3 );
+
+    auto time1 = HAL_GetTick();
+    while( testCtrl.manager() == 0 ) {};
+    auto deltaTimeMs = HAL_GetTick() - time1;
+
+    CHECK_TRUE( deltaTimeMs >= 10 );
 }

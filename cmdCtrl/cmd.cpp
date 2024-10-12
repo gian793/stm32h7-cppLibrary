@@ -19,7 +19,7 @@
   * @retval Command state.
   */
 
-CmdState Cmd::execute( void ) 
+CmdState Cmd::execute( void )
 {
     if( type != CmdType::noCmd )
     {

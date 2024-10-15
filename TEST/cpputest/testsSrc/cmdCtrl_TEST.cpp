@@ -78,9 +78,9 @@ TEST( cmdCtrl, cmdCnt )
 {
     cmdCtrl testCtrl;
 
-    testCtrl.load( CmdType::cmd1, &testObj );
-    testCtrl.load( CmdType::cmd1, &testObj );
-    testCtrl.load( CmdType::cmd1, &testObj );
+    testCtrl.load( &testObj, CmdType::cmd1  );
+    testCtrl.load( &testObj, CmdType::cmd1  );
+    testCtrl.load( &testObj, CmdType::cmd1  );
 
     CHECK_EQUAL( 3, testCtrl.getCmdCnt() );
 }
@@ -89,9 +89,9 @@ TEST( cmdCtrl, cmdNotAdded )
 {
     cmdCtrl testCtrl;
 
-    testCtrl.load( CmdType::cmd1, &testObj );
-    testCtrl.load( CmdType::noCmd, &testObj );
-    testCtrl.load( CmdType::cmd2, &testObj );
+    testCtrl.load( &testObj, CmdType::cmd1 );
+    testCtrl.load( &testObj, CmdType::noCmd );
+    testCtrl.load( &testObj, CmdType::cmd2 );
 
     CHECK_EQUAL( 2, testCtrl.getCmdCnt() );
 }
@@ -100,11 +100,11 @@ TEST( cmdCtrl, txSort )
 {
     cmdCtrl testCtrl;
 
-    CHECK_TRUE( testCtrl.load( CmdType::cmd1, &obj1, PrioLevel::high ) );
-    CHECK_TRUE( testCtrl.load( CmdType::cmd1, &obj2, PrioLevel::low ) );
-    CHECK_TRUE( testCtrl.load( CmdType::cmd1, &obj3, PrioLevel::l2 ) );
-    CHECK_TRUE( testCtrl.load( CmdType::cmd1, &obj4, PrioLevel::l2 ) );
-    CHECK_TRUE( testCtrl.load( CmdType::cmd1, &obj5, PrioLevel::l3 ) );
+    CHECK_TRUE( testCtrl.load( &obj1, CmdType::cmd1, CmdType::noCmd, PrioLevel::high ) );
+    CHECK_TRUE( testCtrl.load( &obj2, CmdType::cmd1, CmdType::noCmd, PrioLevel::low ) );
+    CHECK_TRUE( testCtrl.load( &obj3, CmdType::cmd1, CmdType::noCmd, PrioLevel::l2 ) );
+    CHECK_TRUE( testCtrl.load( &obj4, CmdType::cmd1, CmdType::noCmd, PrioLevel::l2 ) );
+    CHECK_TRUE( testCtrl.load( &obj5, CmdType::cmd1, CmdType::noCmd, PrioLevel::l3 ) );
 
     testCtrl.manager();
 
@@ -126,34 +126,36 @@ TEST( cmdCtrl, notEmptyManager )
 {
     cmdCtrl testCtrl;
 
-    testCtrl.load( CmdType::cmd1, &testObj );
-    testCtrl.load( CmdType::cmd1, &testObj );
-    testCtrl.load( CmdType::cmd2, &testObj );
+    testCtrl.load(  &testObj, CmdType::cmd1 );
+    testCtrl.load(  &testObj, CmdType::cmd1 );
+    testCtrl.load(  &testObj, CmdType::cmd2 );
 
    CHECK_TRUE( testCtrl.manager() == 3 );
 }
 
 TEST( cmdCtrl, periodicManager )
 {
-    
-    
-    first check that periodic commands remoaininthe ctrl array
-
-
-
     constexpr uint32_t TEST_PeriodMs = 10;
-
     cmdCtrl testCtrl;
 
-    testCtrl.load( CmdType::cmd1, &testObj );
-    testCtrl.load( CmdType::cmd1, &testObj, PrioLevel::high, CmdType::noCmd, cmdDefaultRetryNr, cmdDefaultTimeoutMs, TEST_PeriodMs, cmdDefaultDelayMs );
-    testCtrl.load( CmdType::cmd2, &testObj );
+    testCtrl.load( &testObj, CmdType::cmd1 );
+    testCtrl.load( &testObj, CmdType::cmd1, CmdType::noCmd, PrioLevel::high, 0, cmdDefaultRetryNr, cmdDefaultTimeoutMs, TEST_PeriodMs, cmdDefaultDelayMs );
+    testCtrl.load( &testObj, CmdType::cmd2 );
 
-    CHECK_TRUE( testCtrl.manager() == 3 );
+    CHECK_EQUAL( 3, testCtrl.manager() );
+    CHECK_EQUAL( 3, testObj.getSendCnt() );
+    CHECK_EQUAL( 1, testCtrl.getCmdCnt() ); /* Only periodic comand is still in the row. */
 
+    /* Measure period. */
     auto time1 = HAL_GetTick();
     while( testCtrl.manager() == 0 ) {};
     auto deltaTimeMs = HAL_GetTick() - time1;
+    CHECK_TRUE( deltaTimeMs >= TEST_PeriodMs && deltaTimeMs < TEST_PeriodMs + 5 );
 
-    CHECK_TRUE( deltaTimeMs >= 10 );
+    /* Count periodic calls. */
+    testObj.reset();
+    CHECK_EQUAL( 0, testObj.getSendCnt() );
+    time1 = HAL_GetTick();
+    while( ( HAL_GetTick() - time1 ) < 3*TEST_PeriodMs + 5 ){ testCtrl.manager(); }
+    CHECK_EQUAL( 3, testObj.getSendCnt() );
 }

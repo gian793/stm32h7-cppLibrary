@@ -60,10 +60,10 @@ uint32_t cmdCtrl::manager( void )
   * @retval True if command added successfully to tx buffer.
   */
 
-bool cmdCtrl::load( CmdType   cmdType, 
-                    CmdObj*   pCmdObj, 
-                    PrioLevel cmdPrioLevel,
+bool cmdCtrl::load( CmdObj*   pCmdObj, 
+                    CmdType   cmdType, 
                     CmdType   cmdReplyType, 
+                    PrioLevel cmdPrioLevel,
                     uint32_t  cmdToken,
                     uint32_t  cmdRetryNr, 
                     uint32_t  cmdTimeoutMs, 

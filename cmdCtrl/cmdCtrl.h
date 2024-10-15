@@ -21,11 +21,11 @@ class cmdCtrl
 
         uint32_t manager( void );
 
-        bool load(  
-                    CmdType   cmdType, 
+        bool load(                      
                     CmdObj*   pCmdObj, 
-                    PrioLevel cmdPrioLevel = PrioLevel::low, 
+                    CmdType   cmdType, 
                     CmdType   cmdReplyType = CmdType::noCmd, 
+                    PrioLevel cmdPrioLevel = PrioLevel::low, 
                     uint32_t  cmdToken     = 0,
 
                     uint32_t  cmdRetryNr   = cmdDefaultRetryNr, 

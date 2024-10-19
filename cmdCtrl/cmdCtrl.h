@@ -55,7 +55,7 @@ class cmdCtrl
 
         uint32_t nextToken{0};
 
-        // Test comment
+        // Test comment ++
 
         void reset( void ) 
         { 

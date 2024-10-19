@@ -55,6 +55,8 @@ class cmdCtrl
 
         uint32_t nextToken{0};
 
+        // Test comment
+
         void reset( void ) 
         { 
             for( uint32_t i = 0; i < cmdBufferSize; ++i )

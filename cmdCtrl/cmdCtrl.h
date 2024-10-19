@@ -26,7 +26,7 @@ class cmdCtrl
                     CmdType   cmdType, 
                     CmdType   cmdReplyType = CmdType::noCmd, 
                     PrioLevel cmdPrioLevel = PrioLevel::low, 
-                    uint32_t  cmdToken    = 0,
+                    uint32_t  cmdToken     = 0,
 
                     uint32_t  cmdRetryNr   = cmdDefaultRetryNr, 
                     uint32_t  cmdTimeoutMs = cmdDefaultTimeoutMs, 
@@ -161,7 +161,7 @@ int main()
 
     cmdType cmd = cmdType::cmd_Max;
 
-    std::cout << "CmdType is: " << countCmd( cmd ) << std::endl;
+    //// std::cout << "CmdType is: " << countCmd( cmd ) << std::endl; 
 
 }
  */

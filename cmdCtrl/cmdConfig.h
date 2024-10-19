@@ -11,7 +11,7 @@
 
 constexpr uint32_t cmdBufferSize = 16;             /* Channel size. */
 
-constexpr uint32_t cmdDefaultTimeoutMs = 1000;
+constexpr uint32_t cmdDefaultTimeoutMs = 50;
 
 constexpr uint32_t cmdDefaultPeriodMs = 0;
 
@@ -43,6 +43,7 @@ enum class PrioLevel : int {    l0,
                                 Max,
 
                                 /* helpers. */
+                                invalid = -1,
                                 low = 0,
                                 high = Max - 1,
                                 medium = (low+high)/2,

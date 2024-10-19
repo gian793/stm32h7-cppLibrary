@@ -9,34 +9,80 @@
 
 /*---------------------------------------------------------------------------*/
 
+
+
+/*---------------------------------------------------------------------------*/
+
 class cmdCtrl
 {
-public:
+    public:
 
-    cmdCtrl(): txCnt(0), rxCnt(0) {
-        std::random_device rd;  
-        std::mt19937 gen(rd());     /* Standard mersenne_twister_engine seeded with rd(). */
-        std::uniform_int_distribution<uint32_t> dist(0, std::numeric_limits<uint32_t>::max());
-    }
+        cmdCtrl() { reset(); }
 
-    void Manager( void );
+        uint32_t manager( void );
 
-    void Tx( Cmd &xCmd );
+        bool load(                      
+                    CmdObj*   pCmdObj, 
+                    CmdType   cmdType, 
+                    CmdType   cmdReplyType = CmdType::noCmd, 
+                    PrioLevel cmdPrioLevel = PrioLevel::low, 
+                    uint32_t  cmdToken     = 0,
 
-private:
-    std::array<Cmd, cmdBufferSize> txBuffer;    /* Out-going commands. */
+                    uint32_t  cmdRetryNr   = cmdDefaultRetryNr, 
+                    uint32_t  cmdTimeoutMs = cmdDefaultTimeoutMs, 
+                    uint32_t  cmdPeriodMs  = cmdDefaultPeriodMs, 
+                    uint32_t  cmdDelayMs   = cmdDefaultDelayMs,  
+                    
+                    bool isReply = false );
 
-    std::array<Cmd, cmdBufferSize> rxBuffer;    /* In-coming commands or replies to out-going commands. */
+        //bool removeCmd( uint32_t token );
 
-    uint32_t txCnt;
+        uint32_t getCmdCnt( void ) { return cnt; } 
 
-    uint32_t rxCnt;
+        //uint32_t getFreeIdxCnt( void ) { return ( cmdBufferSize - cnt ); }
+
+    private:
+
+        LockingData_t cmdLock;
+
+        std::array<Cmd,      cmdBufferSize> cmdBuffer;  /* In-coming commands or replies to out-going commands. */
+        std::array<uint32_t, cmdBufferSize> prioBuffer; /* Increasing priority order, index=0 has lowest priority. */
+        std::array<uint32_t, cmdBufferSize> idxBuffer;  /* Next command free index. */
+
+        uint32_t cnt{0};                                /* Number of commands to execute. */
+
+        uint32_t nextIdx{0};                            /* Index of the next command to load. */
+
+        uint32_t nextToken{0};
+
+        void reset( void ) 
+        { 
+            for( uint32_t i = 0; i < cmdBufferSize; ++i )
+            {
+                cmdBuffer[ i ].reset();
+
+                idxBuffer[ i ] = i;
+            }  
+        }
+
+        Cmd getCmd( uint32_t cmdIdx )  { return cmdBuffer[ cmdIdx ]; }
+
+        void freeIndex( uint32_t idx ) 
+        { 
+            /* Remove idx from priority buffer. */
+            for( auto i = idx; i < cnt - 1; ++i )   
+            {
+                prioBuffer[ i ] = prioBuffer[ i + 1 ];
+            }
+
+            /* Add idx to available index buffer. */
+            idxBuffer[ --cnt ] = idx;
+        }; 
 };
 
 /*---------------------------------------------------------------------------*/
 
 #endif /* CSIMPLE_TEST_H_ */
-
 
 /*---------------------------------------------------------------------------*/
 /*

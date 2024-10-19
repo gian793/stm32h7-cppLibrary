@@ -10,6 +10,7 @@
 enum class CmdState : int { Idle,
                             Sent,
                             WaitForReply,
+                            Done,
                             Timeout,
 
                             Max,
@@ -18,93 +19,158 @@ enum class CmdState : int { Idle,
                             begin = 0,
                             end = Max };
 
+class CmdObj {
+    public:
+        virtual void send( void ) {};
+        virtual void reply( void ) {};
+        virtual void timeout( void ) {};
+};
+
 class Cmd {
 
-public:
+    public:
 
-    using pCallback = void (Cmd::*)(uint8_t*);
+        //using pCallback = void (Cmd::*)(void);
 
-    Cmd(    CmdType   cmdType      = CmdType::noCmd,
-            CmdType   cmdReplyType = CmdType::noCmd,
-            PrioLevel cmdPrioLevel = PrioLevel::low,
-            uint32_t  cmdRetryNr   = cmdDefaultRetryNr,
-            uint32_t  cmdTimeoutMs = cmdDefaultTimeoutMs,
-            uint32_t  cmdPeriodMs  = cmdDefaultPeriodMs,
-            uint32_t  cmdDelayMs   = cmdDefaultDelayMs,
-            pCallback done         = nullptr,
-            pCallback reply        = nullptr,
-            pCallback timeout      = nullptr    ) :
+        explicit Cmd(   CmdType   cmdType      = CmdType::noCmd,
+                        CmdType   cmdReplyType = CmdType::noCmd,
+                        PrioLevel cmdPrioLevel = PrioLevel::low,
+                        uint32_t  cmdRetryNr   = cmdDefaultRetryNr,
+                        uint32_t  cmdTimeoutMs = cmdDefaultTimeoutMs,
+                        uint32_t  cmdPeriodMs  = cmdDefaultPeriodMs,
+                        uint32_t  cmdDelayMs   = cmdDefaultDelayMs   ) :
 
-            type      { cmdType },
-            replyType { cmdReplyType },
-            priority  { cmdPrioLevel },
-            retryNr   { cmdRetryNr },
-            timeoutMs { cmdTimeoutMs },
-            periodMs  { cmdPeriodMs },
-            delayMs   { cmdDelayMs },
-            token     { ++nextToken },
-            done_Cb   { done },
-            reply_Cb  { reply },
-            timeout_Cb{ timeout }  {}
+                        type      { cmdType },
+                        replyType { cmdReplyType },
+                        priority  { cmdPrioLevel },
+                        retryNr   { cmdRetryNr },
+                        timeoutMs { cmdTimeoutMs },
+                        periodMs  { cmdPeriodMs },
+                        delayMs   { cmdDelayMs } {}
 
-    Cmd& operator=(const Cmd& other)
-    {
-        if( this != &other )
+        explicit Cmd(   CmdObj*   pObject, 
+                        CmdType   cmdType      = CmdType::noCmd,
+                        CmdType   cmdReplyType = CmdType::noCmd,
+                        PrioLevel cmdPrioLevel = PrioLevel::low,
+                        uint32_t  cmdRetryNr   = cmdDefaultRetryNr,
+                        uint32_t  cmdTimeoutMs = cmdDefaultTimeoutMs,
+                        uint32_t  cmdPeriodMs  = cmdDefaultPeriodMs,
+                        uint32_t  cmdDelayMs   = cmdDefaultDelayMs   ) :
+                
+                        Cmd {   cmdType, 
+                                cmdReplyType, 
+                                cmdPrioLevel, 
+                                cmdRetryNr, 
+                                cmdTimeoutMs, 
+                                cmdPeriodMs, 
+                                cmdDelayMs  }
+                        { 
+                            setObj( pObject );
+                        }
+        
+        void setObj( CmdObj* pObject )
         {
-//            Cmd tmp( other ); /* RAII. */
-//            tmp.swap(*this);
+            if( pObject != nullptr )
+            {
+                pObj = pObject; 
+            }     
+            else
+            {
+                pObj = &obj;
+            }
+        }
+        
+        /* Initialization of state machine: state and timers init. */
+        void init( uint32_t newToken )  {   token = newToken; 
+                                            state = CmdState::Idle; 
+                                            retry = 0; 
+                                            isReplied = false;
+                                            timeoutTimerMs = getTimerMs(); 
+                                            delayTimerMs   = getTimerMs();  }
+
+        void init( uint32_t newToken, CmdObj* pObject )  {  init( newToken );
+                                                            setObj( pObject );  }
+        
+        void set(   CmdType   cmdType,
+                    CmdObj*   pObject, 
+                    PrioLevel cmdPrioLevel = PrioLevel::low,
+                    CmdType   cmdReplyType = CmdType::noCmd,
+                    uint32_t  cmdToken     = 0,
+
+                    uint32_t  cmdRetryNr   = cmdDefaultRetryNr,
+                    uint32_t  cmdTimeoutMs = cmdDefaultTimeoutMs,
+                    uint32_t  cmdPeriodMs  = cmdDefaultPeriodMs,
+                    uint32_t  cmdDelayMs   = cmdDefaultDelayMs   )
+        {
+            init( cmdToken, pObject );
+
+            type      = cmdType;
+            replyType = cmdReplyType;
+            priority  = cmdPrioLevel;
+            retryNr   = cmdRetryNr;
+            timeoutMs = cmdTimeoutMs;
+            periodMs  = cmdPeriodMs;
+            delayMs   = cmdDelayMs;
         }
 
-        return *this;
-    }
-    
-//    void swap( Cmd& s) noexcept
-//    {
-//        std::swap(this, s);
-//    }
+        // static bool priorityGreaterEqual( const Cmd &lCmd, const Cmd &rCmd ) { return lCmd.priority >= rCmd.priority; } const
 
-    void SetCallbacks(  pCallback xCmdDone_Cb = nullptr,
-                        pCallback xReply_Cb   = nullptr,
-                        pCallback xTimeout_Cb = nullptr )
-                    {   done_Cb    = xCmdDone_Cb;
-                        reply_Cb   = xReply_Cb;
-                        timeout_Cb = xTimeout_Cb;
-                    }
+        // static bool prioritySmallerEqual( const Cmd &lCmd, const Cmd &rCmd ) { return lCmd.priority <= rCmd.priority; } const
 
+        // static bool priorityEqual( const Cmd &lCmd, const Cmd &rCmd ) { return lCmd.priority == rCmd.priority; } const                            
+                                            
+        void reset( void ) { type = CmdType::noCmd; isReplied = false; }
 
-private:
+        CmdState execute( void );
 
-    CmdType   type;
+        void replied( void ) { isReplied = ( replyType != CmdType::noCmd ); } /* Flag can be set only if a reply is expected. */
 
-    CmdType   replyType;      /* Which type of command is expected as reply. */
+        bool isPeriodic( void ) const { return ( periodMs > 0 ); }
 
+        CmdType  type;
 
-    PrioLevel priority;
+        CmdType  replyType;        /* Command type expected as reply. */
 
-    uint32_t  retryNr;
+        PrioLevel priority;
 
-    uint32_t  timeoutMs;
+        uint32_t  token{ 0 };      /* Each issued command has an unique token assigned to it. Replies must have the same token used by the issued command they refer to. */
 
-    uint32_t  periodMs;
+    private:
 
-    uint32_t  delayMs;
+        CmdObj obj;
+
+        CmdObj* pObj { &obj };
 
 
-    pCallback done_Cb;
+        uint32_t  retryNr;
 
-    pCallback reply_Cb;
-
-    pCallback timeout_Cb;
+        uint32_t  retry;
 
 
-    CmdState  state = CmdState::Idle;
+        uint32_t  timeoutMs;
 
-    uint32_t nextToken = 0;
+        uint32_t  timeoutTimerMs;
 
-    uint32_t  token = 0;    /* Each issued command has an unique token assigned to it. It is replicated in the reply as well. */
 
-    bool suspend = false;   /* Used to suspend (periodic) command execution. */
+        uint32_t  periodMs;
 
+        //uint32_t  periodTimerMs;
+
+
+        uint32_t  delayMs;
+
+        uint32_t  delayTimerMs;         /* In case of peiodic command only the first time the delay is applied. */
+        
+
+        CmdState  state{ CmdState::Idle };
+
+        bool      suspend{ false };     /* Used to suspend (periodic) command execution. */
+
+        bool      isReply{ false };
+
+        bool      isReplied{ false };
+
+        uint32_t  getTimerMs( void ) const;
 };
 
 #endif /* CMDCTRL_CMD_H_ */

@@ -26,6 +26,8 @@ endif
 #
 #SRC_FILES += example-src/Example.c
 #SRC_FILES += ../Common/unitTest/doubles/stm32h7xx_hal_uart.c
+SRC_FILES += ../../cmdCtrl/cmd.cpp
+SRC_FILES += ../../cmdCtrl/cmdCtrl.cpp
 SRC_FILES += ../../ringBuffer/ringBuffer.cpp
 SRC_FILES += ../../mxLog/mxLog.cpp
 
@@ -39,6 +41,7 @@ SRC_FILES += ../../mxLog/mxLog.cpp
 # TEST_SRC_DIRS, builds everything in the directory
 
 TEST_SRC_FILES += doublesSrc/stm32h7xx_hal_uart.c
+TEST_SRC_FILES += doublesSrc/stm32h7xx_hal.cpp
 
 TEST_SRC_DIRS += tests
 TEST_SRC_DIRS += testsSrc
@@ -62,6 +65,7 @@ CPPUTEST_USE_EXTENSIONS = Y
 # containing directory
 INCLUDE_DIRS += $(CPPUTEST_HOME)/include
 
+INCLUDE_DIRS += ../../cmdCtrl
 INCLUDE_DIRS += ../../ringBuffer
 INCLUDE_DIRS += ../../mxLog
 

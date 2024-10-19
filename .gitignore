@@ -1,0 +1,9 @@
+*.o
+*.d
+*.su
+
+/TEST/testPrj/CM7/Debug
+/TEST/testPrj/CM4/Debug
+
+/TEST/cpputest/test-lib
+/TEST/cpputest/test-obj

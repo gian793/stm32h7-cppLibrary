@@ -11,12 +11,15 @@
 extern "C" {
 #endif */
 
+#include <cassert>
+
 template <class T>
 class ringBuffer
 {
     public:
 		ringBuffer( T* pBuf, const size_t size ) : buf{ pBuf }, maxSize{ size }
         {
+            assert( ( size % sizeof(T) ) == 0 );
             stm32_lock_init( &lock );
         }
 

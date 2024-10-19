@@ -115,7 +115,7 @@ int main()
 
     cmdType cmd = cmdType::cmd_Max;
 
-    //std::cout << "CmdType is: " << countCmd( cmd ) << std::endl;
+    std::cout << "CmdType is: " << countCmd( cmd ) << std::endl;
 
 }
  */

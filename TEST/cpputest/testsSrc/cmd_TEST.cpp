@@ -94,7 +94,6 @@ TEST( cmd, executeWaitForReply )
     Cmd cmd{ CmdType::cmd1, CmdType::cmd2 };
 
     CHECK_TRUE( ( CmdState::Sent == cmd.execute() ) );
-
     CHECK_TRUE( ( CmdState::WaitForReply == cmd.execute() ) );
 }
 
@@ -144,9 +143,7 @@ TEST( cmd, sendCb_noReply )
                 cmdDefaultRetryNr, cmdDefaultTimeoutMs, cmdDefaultPeriodMs, cmdDefaultDelayMs   };
 
     CHECK_EQUAL( 0, localObj.getSendCnt() );
-
     CHECK_TRUE( CmdState::Done == cmd.execute() );
-
     CHECK_EQUAL( 1, localObj.getSendCnt() );
 }
 

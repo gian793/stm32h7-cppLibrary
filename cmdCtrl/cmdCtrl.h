@@ -21,21 +21,29 @@ class cmdCtrl
 
         uint32_t manager( void );
 
-        bool load(                      
-                    CmdObj*   pCmdObj, 
-                    CmdType   cmdType, 
-                    CmdType   cmdReplyType = CmdType::noCmd, 
-                    PrioLevel cmdPrioLevel = PrioLevel::low, 
-                    uint32_t  cmdToken     = 0,
+        bool loadCmd(   CmdObj*   pCmdObj, 
+                        CmdType   cmdType, 
+                        CmdType   cmdReplyType = CmdType::noCmd, 
+                        PrioLevel cmdPrioLevel = PrioLevel::low, 
+                        uint32_t  cmdToken     = 0,
 
-                    uint32_t  cmdRetryNr   = cmdDefaultRetryNr, 
-                    uint32_t  cmdTimeoutMs = cmdDefaultTimeoutMs, 
-                    uint32_t  cmdPeriodMs  = cmdDefaultPeriodMs, 
-                    uint32_t  cmdDelayMs   = cmdDefaultDelayMs,  
-                    
-                    bool isReply = false );
+                        uint32_t  cmdRetryNr   = cmdDefaultRetryNr, 
+                        uint32_t  cmdTimeoutMs = cmdDefaultTimeoutMs, 
+                        uint32_t  cmdPeriodMs  = cmdDefaultPeriodMs, 
+                        uint32_t  cmdDelayMs   = cmdDefaultDelayMs );
 
-        //bool removeCmd( uint32_t token );
+        bool loadReply( CmdObj*   pCmdObj, 
+                        CmdType   cmdType, 
+                        CmdType   cmdReplyType = CmdType::noCmd, 
+                        PrioLevel cmdPrioLevel = PrioLevel::low, 
+                        uint32_t  cmdToken     = 0,
+
+                        uint32_t  cmdRetryNr   = cmdDefaultRetryNr, 
+                        uint32_t  cmdTimeoutMs = cmdDefaultTimeoutMs, 
+                        uint32_t  cmdPeriodMs  = cmdDefaultPeriodMs, 
+                        uint32_t  cmdDelayMs   = cmdDefaultDelayMs );
+
+        bool removeCmd( uint32_t token );
 
         uint32_t getCmdCnt( void ) { return cnt; } 
 
@@ -53,8 +61,6 @@ class cmdCtrl
 
         uint32_t nextIdx{0};                            /* Index of the next command to load. */
 
-        uint32_t nextToken{0};
-
         // Test comment ++
 
         void reset( void ) 
@@ -71,15 +77,47 @@ class cmdCtrl
 
         void freeIndex( uint32_t idx ) 
         { 
+            bool isFound = false;
+
             /* Remove idx from priority buffer. */
             for( auto i = idx; i < cnt - 1; ++i )   
             {
                 prioBuffer[ i ] = prioBuffer[ i + 1 ];
             }
 
+            /* Remove idx from index buffer. */
+            for( uint32_t i = 0; i < cnt - 1; ++i )   
+            {
+                if( idxBuffer[ i ] == idx )
+                {
+                    isFound = true;
+                }
+
+                if( isFound )
+                {
+                    idxBuffer[ i ] = idxBuffer[ i + 1 ];
+                }
+            }
+
             /* Add idx to available index buffer. */
             idxBuffer[ --cnt ] = idx;
         }; 
+
+        uint32_t getNewToken( void )
+        {
+            uint32_t rndToken = rand();
+
+            for( uint32_t i = 0; i < cnt; ++i )   
+            {
+                /* If token already in use, repeat all. */
+                if( cmdBuffer[ idxBuffer[ i ] ].token == rndToken )
+                {
+                    return getNewToken();
+                }
+            }
+
+            return rndToken;
+        }
 };
 
 /*---------------------------------------------------------------------------*/

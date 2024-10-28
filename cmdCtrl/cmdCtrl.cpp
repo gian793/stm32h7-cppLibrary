@@ -60,16 +60,15 @@ uint32_t cmdCtrl::manager( void )
   * @retval True if command added successfully to tx buffer.
   */
 
-bool cmdCtrl::load( CmdObj*   pCmdObj, 
-                    CmdType   cmdType, 
-                    CmdType   cmdReplyType, 
-                    PrioLevel cmdPrioLevel,
-                    uint32_t  cmdToken,
-                    uint32_t  cmdRetryNr, 
-                    uint32_t  cmdTimeoutMs, 
-                    uint32_t  cmdPeriodMs, 
-                    uint32_t  cmdDelayMs,
-                    bool      isReply )
+bool cmdCtrl::loadCmd(  CmdObj*   pCmdObj, 
+                        CmdType   cmdType, 
+                        CmdType   cmdReplyType, 
+                        PrioLevel cmdPrioLevel,
+                        uint32_t  cmdToken,
+                        uint32_t  cmdRetryNr, 
+                        uint32_t  cmdTimeoutMs, 
+                        uint32_t  cmdPeriodMs, 
+                        uint32_t  cmdDelayMs )
 {
     bool isCmdAdded = false;
 
@@ -78,12 +77,15 @@ bool cmdCtrl::load( CmdObj*   pCmdObj,
     /* Is there still place in the buffer? */
     if( ( cmdType != CmdType::noCmd ) && ( cnt < cmdBuffer.max_size() ) ) 
     {                
+        if( cmdToken == 0 )
+        {
+            cmdToken = getNewToken();
+        }
+                
         /* Get next free index in the command array. */
         auto idx = idxBuffer[ cnt ];
 
-        uint32_t token = cmdToken == 0 ? ++nextToken : cmdToken;
-
-        cmdBuffer[ idx ].set( cmdType, pCmdObj, cmdPrioLevel, cmdReplyType, token, cmdRetryNr, cmdTimeoutMs, cmdPeriodMs, cmdDelayMs );
+        cmdBuffer[ idx ].set( cmdType, pCmdObj, cmdPrioLevel, cmdReplyType, cmdToken, cmdRetryNr, cmdTimeoutMs, cmdPeriodMs, cmdDelayMs );
 
         prioBuffer[ cnt++ ] = idx;
 
@@ -104,18 +106,18 @@ bool cmdCtrl::load( CmdObj*   pCmdObj,
             }
         }
 
-        if( isReply )
-        {
-            for( Cmd &cmd: cmdBuffer ) 
-            { 
-                if( ( cmd.token == cmdToken ) && ( cmd.replyType ==  cmdType ) )
-                {
-                    cmd.replied();
+        // if( isReply )
+        // {
+        //     for( Cmd &cmd: cmdBuffer ) 
+        //     { 
+        //         if( ( cmd.token == cmdToken ) && ( cmd.replyType ==  cmdType ) )
+        //         {
+        //             cmd.replied();
 
-                    break;
-                }
-            }
-        }
+        //             break;
+        //         }
+        //     }
+        // }
 
         isCmdAdded = true;           
     } 
@@ -123,4 +125,67 @@ bool cmdCtrl::load( CmdObj*   pCmdObj,
     stm32_lock_release( &cmdLock );
 
     return isCmdAdded;
+}
+
+/**
+  * @brief  Load a reply to be executed.
+  * @param  Command to be transmitted.
+  * @retval True if command added successfully to tx buffer.
+  */
+
+bool cmdCtrl::loadReply(    CmdObj*   pCmdObj, 
+                            CmdType   cmdType, 
+                            CmdType   cmdReplyType, 
+                            PrioLevel cmdPrioLevel,
+                            uint32_t  cmdToken,
+                            uint32_t  cmdRetryNr, 
+                            uint32_t  cmdTimeoutMs, 
+                            uint32_t  cmdPeriodMs, 
+                            uint32_t  cmdDelayMs )
+    {
+
+    bool isReplyAdded = false;
+
+    if( this->loadCmd( pCmdObj, cmdType, cmdReplyType, cmdPrioLevel, cmdToken, cmdRetryNr, cmdTimeoutMs, cmdPeriodMs, cmdDelayMs ) )
+    {
+        for( Cmd &cmd: cmdBuffer ) 
+        { 
+            if( ( cmd.token == cmdToken ) && ( cmd.replyType ==  cmdType ) )
+            {
+                cmd.replied();
+
+                break;
+            }
+        }
+
+        isReplyAdded = true;           
+    } 
+
+    return isReplyAdded;
+}
+
+/** @brief  Remove the command with specified token.
+  * @param  Token of the command to remove.
+  * @retval True if the command has been (found) and removed.
+  */
+
+bool cmdCtrl::removeCmd( uint32_t token )
+{
+    bool isCmdRemoved = false;
+
+    for( uint32_t i = 0; i < cnt; ++i )   
+    {
+        auto idx = idxBuffer[ i ];
+
+        if( cmdBuffer[ idx ].token == token )
+        {
+            cmdBuffer[ idx ].reset();
+
+            freeIndex( idx ); 
+
+            isCmdRemoved = true;
+        }
+    }
+
+    return isCmdRemoved;
 }

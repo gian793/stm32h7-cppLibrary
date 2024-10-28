@@ -21,6 +21,8 @@ extern "C"
 
 class myObj: public CmdObj {
     public:
+        myObj() : sendCnt{0}, replyCnt{0}, timeoutCnt{0} {}
+
         void send( void ) override { sendCnt++; };
         void reply( void ) override { replyCnt++; };
         void timeout( void ) override { timeoutCnt++; };
@@ -78,9 +80,9 @@ TEST( cmdCtrl, cmdCnt )
 {
     cmdCtrl testCtrl;
 
-    testCtrl.load( &testObj, CmdType::cmd1  );
-    testCtrl.load( &testObj, CmdType::cmd1  );
-    testCtrl.load( &testObj, CmdType::cmd1  );
+    testCtrl.loadCmd( &testObj, CmdType::cmd1  );
+    testCtrl.loadCmd( &testObj, CmdType::cmd1  );
+    testCtrl.loadCmd( &testObj, CmdType::cmd1  );
 
     CHECK_EQUAL( 3, testCtrl.getCmdCnt() );
 }
@@ -89,9 +91,9 @@ TEST( cmdCtrl, cmdNotAdded )
 {
     cmdCtrl testCtrl;
 
-    testCtrl.load( &testObj, CmdType::cmd1 );
-    testCtrl.load( &testObj, CmdType::noCmd );
-    testCtrl.load( &testObj, CmdType::cmd2 );
+    testCtrl.loadCmd( &testObj, CmdType::cmd1 );
+    testCtrl.loadCmd( &testObj, CmdType::noCmd );
+    testCtrl.loadCmd( &testObj, CmdType::cmd2 );
 
     CHECK_EQUAL( 2, testCtrl.getCmdCnt() );
 }
@@ -100,11 +102,11 @@ TEST( cmdCtrl, txSort )
 {
     cmdCtrl testCtrl;
 
-    CHECK_TRUE( testCtrl.load( &obj1, CmdType::cmd1, CmdType::noCmd, PrioLevel::high ) );
-    CHECK_TRUE( testCtrl.load( &obj2, CmdType::cmd1, CmdType::noCmd, PrioLevel::low ) );
-    CHECK_TRUE( testCtrl.load( &obj3, CmdType::cmd1, CmdType::noCmd, PrioLevel::l2 ) );
-    CHECK_TRUE( testCtrl.load( &obj4, CmdType::cmd1, CmdType::noCmd, PrioLevel::l2 ) );
-    CHECK_TRUE( testCtrl.load( &obj5, CmdType::cmd1, CmdType::noCmd, PrioLevel::l3 ) );
+    CHECK_TRUE( testCtrl.loadCmd( &obj1, CmdType::cmd1, CmdType::noCmd, PrioLevel::high ) );
+    CHECK_TRUE( testCtrl.loadCmd( &obj2, CmdType::cmd1, CmdType::noCmd, PrioLevel::low ) );
+    CHECK_TRUE( testCtrl.loadCmd( &obj3, CmdType::cmd1, CmdType::noCmd, PrioLevel::l2 ) );
+    CHECK_TRUE( testCtrl.loadCmd( &obj4, CmdType::cmd1, CmdType::noCmd, PrioLevel::l2 ) );
+    CHECK_TRUE( testCtrl.loadCmd( &obj5, CmdType::cmd1, CmdType::noCmd, PrioLevel::l3 ) );
 
     testCtrl.manager();
 
@@ -126,11 +128,28 @@ TEST( cmdCtrl, notEmptyManager )
 {
     cmdCtrl testCtrl;
 
-    testCtrl.load(  &testObj, CmdType::cmd1 );
-    testCtrl.load(  &testObj, CmdType::cmd1 );
-    testCtrl.load(  &testObj, CmdType::cmd2 );
+    testCtrl.loadCmd(  &testObj, CmdType::cmd1 );
+    testCtrl.loadCmd(  &testObj, CmdType::cmd1 );
+    testCtrl.loadCmd(  &testObj, CmdType::cmd2 );
 
    CHECK_TRUE( testCtrl.manager() == 3 );
+}
+
+TEST( cmdCtrl, removeCmd )
+{
+    cmdCtrl testCtrl;
+
+    testCtrl.loadCmd(  &testObj, CmdType::cmd1, CmdType::noCmd, PrioLevel::low, 22222 );
+    testCtrl.loadCmd(  &testObj, CmdType::cmd1, CmdType::noCmd, PrioLevel::low, 33333 );
+    testCtrl.loadCmd(  &testObj, CmdType::cmd1, CmdType::noCmd, PrioLevel::low, 44444 );
+    testCtrl.loadCmd(  &testObj, CmdType::cmd1, CmdType::noCmd, PrioLevel::low, 55555 );
+    
+    CHECK_EQUAL( 4, testCtrl.getCmdCnt() );
+
+    CHECK_TRUE( testCtrl.removeCmd( 33333 ) );
+    CHECK_EQUAL( 3, testCtrl.getCmdCnt() );
+    CHECK_TRUE( testCtrl.removeCmd( 55555 ) );
+    CHECK_EQUAL( 2, testCtrl.getCmdCnt() );
 }
 
 TEST( cmdCtrl, periodicManager )
@@ -138,9 +157,9 @@ TEST( cmdCtrl, periodicManager )
     constexpr uint32_t TEST_PeriodMs = 10;
     cmdCtrl testCtrl;
 
-    testCtrl.load( &testObj, CmdType::cmd1 );
-    testCtrl.load( &testObj, CmdType::cmd1, CmdType::noCmd, PrioLevel::high, 0, cmdDefaultRetryNr, cmdDefaultTimeoutMs, TEST_PeriodMs, cmdDefaultDelayMs );
-    testCtrl.load( &testObj, CmdType::cmd2 );
+    testCtrl.loadCmd( &testObj, CmdType::cmd1 );
+    testCtrl.loadCmd( &testObj, CmdType::cmd1, CmdType::noCmd, PrioLevel::high, 0, cmdDefaultRetryNr, cmdDefaultTimeoutMs, TEST_PeriodMs, cmdDefaultDelayMs );
+    testCtrl.loadCmd( &testObj, CmdType::cmd2 );
 
     CHECK_EQUAL( 3, testCtrl.manager() );
     CHECK_EQUAL( 3, testObj.getSendCnt() );
@@ -158,4 +177,21 @@ TEST( cmdCtrl, periodicManager )
     time1 = HAL_GetTick();
     while( ( HAL_GetTick() - time1 ) < 3*TEST_PeriodMs + 5 ){ testCtrl.manager(); }
     CHECK_EQUAL( 3, testObj.getSendCnt() );
+}
+
+TEST( cmdCtrl, reply )
+{
+    cmdCtrl testCtrl;  
+
+    myObj obj1;
+    myObj obj2;  
+
+    obj1.reset();
+    obj2.reset();
+
+    testCtrl.loadCmd( &obj1, CmdType::cmd1, CmdType::cmd2,  PrioLevel::low,  12345 );
+    testCtrl.loadCmd( &obj2, CmdType::cmd2, CmdType::noCmd, PrioLevel::high, 12345, cmdDefaultRetryNr, cmdDefaultTimeoutMs, cmdDefaultPeriodMs, cmdDefaultDelayMs );
+
+    CHECK_EQUAL(0, obj1.getSendCnt());
+    CHECK_EQUAL(0, obj2.getSendCnt());
 }

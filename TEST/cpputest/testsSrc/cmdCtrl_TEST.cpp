@@ -39,6 +39,28 @@ class myObj: public CmdObj {
         uint32_t timeoutCnt = 0;
 };
 
+/*
+class pingObj: public CmdObj {
+    public:
+        myObj() : sendCnt{0}, replyCnt{0}, timeoutCnt{0} {}
+
+        void send( void ) override { sendCnt++; };
+        void reply( void ) override { replyCnt++; };
+        void timeout( void ) override { timeoutCnt++; };
+
+        uint32_t getSendCnt( void ) { return sendCnt; }
+        uint32_t getReplyCnt( void ) { return replyCnt; }
+        uint32_t getTimeoutCnt( void ) { return timeoutCnt; }
+
+        void reset( void ) { sendCnt = 0; replyCnt = 0; timeoutCnt = 0; }
+
+    private:
+        uint32_t sendCnt = 0;
+        uint32_t replyCnt = 0;
+        uint32_t timeoutCnt = 0;
+};
+*/
+
 uint32_t prioIdx{0};
 std::array<char, cmdBufferSize> prioritySeq;
 
@@ -150,6 +172,10 @@ TEST( cmdCtrl, removeCmd )
     CHECK_EQUAL( 3, testCtrl.getCmdCnt() );
     CHECK_TRUE( testCtrl.removeCmd( 55555 ) );
     CHECK_EQUAL( 2, testCtrl.getCmdCnt() );
+
+    /* false remove. */
+    CHECK_FALSE( testCtrl.removeCmd( 33333 ) );
+    CHECK_EQUAL( 2, testCtrl.getCmdCnt() );
 }
 
 TEST( cmdCtrl, periodicManager )
@@ -179,19 +205,46 @@ TEST( cmdCtrl, periodicManager )
     CHECK_EQUAL( 3, testObj.getSendCnt() );
 }
 
-TEST( cmdCtrl, reply )
+TEST( cmdCtrl, replyCmd )
 {
     cmdCtrl testCtrl;  
 
-    myObj obj1;
-    myObj obj2;  
+    myObj cmd1Obj;
+    myObj replyObj;  
 
-    obj1.reset();
-    obj2.reset();
+    cmd1Obj.reset();
+    replyObj.reset();
 
-    testCtrl.loadCmd( &obj1, CmdType::cmd1, CmdType::cmd2,  PrioLevel::low,  12345 );
-    testCtrl.loadCmd( &obj2, CmdType::cmd2, CmdType::noCmd, PrioLevel::high, 12345, cmdDefaultRetryNr, cmdDefaultTimeoutMs, cmdDefaultPeriodMs, cmdDefaultDelayMs );
+    testCtrl.loadCmd( &cmd1Obj, CmdType::cmd1, CmdType::cmd2,  PrioLevel::low,  12345 );
 
-    CHECK_EQUAL(0, obj1.getSendCnt());
-    CHECK_EQUAL(0, obj2.getSendCnt());
+    /* Bring cmd1 in wait for reply state. */
+    testCtrl.manager();
+    CHECK_EQUAL( 1, cmd1Obj.getSendCnt() );
+
+    /* Load reply. */
+    testCtrl.loadReply( &replyObj, CmdType::cmd2, CmdType::noCmd, PrioLevel::high, 12345 );
+    CHECK_EQUAL( 2, testCtrl.getCmdCnt() );
+
+    /* Close cmd1. */
+    testCtrl.manager();
+
+    CHECK_EQUAL( 1, cmd1Obj.getSendCnt() );
+    CHECK_EQUAL( 1, cmd1Obj.getReplyCnt() );
+    CHECK_EQUAL( 0, cmd1Obj.getTimeoutCnt() );
+
+    CHECK_EQUAL( 1, replyObj.getSendCnt() );
+    CHECK_EQUAL( 0, replyObj.getReplyCnt() );
+    CHECK_EQUAL( 0, replyObj.getTimeoutCnt() );
+
+    CHECK_EQUAL( 0, testCtrl.getCmdCnt() );
 }
+
+/*
+TEST( cmdCtrl, pingPoog )
+{
+    cmdCtrl testCtrl;  
+
+    myObj pingObj;
+    myObj pongObj;
+}
+*/

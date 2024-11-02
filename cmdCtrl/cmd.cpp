@@ -66,14 +66,14 @@ CmdState Cmd::execute( void )
                 break;
 
             case CmdState::Timeout:
-                if( bool( options  & CmdOption::RepeatOnTimeout ) )
+                if( static_cast<bool>( options  & CmdOption::RepeatOnTimeout ) )
                 {
                     state = CmdState::Idle;
                 }
 
             case CmdState::Done:
                 if( ( periodMs > 0 ) ||
-                     ( isReplied && bool( options & CmdOption::RepeatOnReply ) ) )
+                     ( isReplied && static_cast<bool>( options & CmdOption::RepeatOnReply ) ) )
                 {
                     isReplied = false;
 

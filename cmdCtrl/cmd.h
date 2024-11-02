@@ -9,6 +9,8 @@
 
 #include <type_traits>
 
+/*---------------------------------------------------------------------------*/
+
 enum class CmdState: int {  Idle = 0,
                             Sent,
                             WaitForReply,
@@ -21,12 +23,12 @@ enum class CmdState: int {  Idle = 0,
                             begin = Idle,
                             end = Max };
 
-
+/*---------------------------------------------------------------------------*/
 
 enum class CmdOption: int { None = 0,
                             RepeatOnReply = 1,
                             RepeatOnTimeout = 2,
-                            RepeatForever = 3,    /* RepeatForever = RepeatOnReply + RepeatOnTimeout */
+                            RepeatForever = 4,    /* RepeatForever = RepeatOnReply + RepeatOnTimeout */
 
                             Max,
 
@@ -34,17 +36,15 @@ enum class CmdOption: int { None = 0,
                             begin = 0,
                             end = Max };
 
-inline CmdOption operator &(CmdOption lhs, CmdOption rhs) {
-    return static_cast<CmdOption>( static_cast<std::underlying_type_t<CmdOption>>(lhs) & static_cast<std::underlying_type_t<CmdOption>>(rhs) );
-}
-
-inline CmdOption operator |(CmdOption lhs, CmdOption rhs) {
-    return static_cast<CmdOption>( static_cast<std::underlying_type_t<CmdOption>>(lhs) | static_cast<std::underlying_type_t<CmdOption>>(rhs) );
+inline bool operator &(CmdOption lhs, CmdOption rhs) {
+    return static_cast<bool>( static_cast<std::underlying_type_t<CmdOption>>(lhs) & static_cast<std::underlying_type_t<CmdOption>>(rhs) );
 }
 
 inline CmdOption operator +(CmdOption lhs, CmdOption rhs) {
     return static_cast<CmdOption>( static_cast<std::underlying_type_t<CmdOption>>(lhs) + static_cast<std::underlying_type_t<CmdOption>>(rhs) );
 }
+
+/*---------------------------------------------------------------------------*/
 
 class CmdObj {
     public:
@@ -52,6 +52,8 @@ class CmdObj {
         virtual void reply( void ) {};
         virtual void timeout( void ) {};
 };
+
+/*---------------------------------------------------------------------------*/
 
 class Cmd {
 

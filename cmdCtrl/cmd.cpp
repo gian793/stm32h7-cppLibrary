@@ -50,7 +50,6 @@ CmdState Cmd::execute( void )
                 state = CmdState::WaitForReply;
 
             case CmdState::WaitForReply:
-
                 if( isReplied )
                 {
                     pObj->reply();

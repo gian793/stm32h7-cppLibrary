@@ -40,6 +40,10 @@ inline bool operator &(CmdOption lhs, CmdOption rhs) {
     return static_cast<bool>( static_cast<std::underlying_type_t<CmdOption>>(lhs) & static_cast<std::underlying_type_t<CmdOption>>(rhs) );
 }
 
+inline bool operator |(CmdOption lhs, CmdOption rhs) {
+    return static_cast<bool>( static_cast<std::underlying_type_t<CmdOption>>(lhs) | static_cast<std::underlying_type_t<CmdOption>>(rhs) );
+}
+
 inline CmdOption operator +(CmdOption lhs, CmdOption rhs) {
     return static_cast<CmdOption>( static_cast<std::underlying_type_t<CmdOption>>(lhs) + static_cast<std::underlying_type_t<CmdOption>>(rhs) );
 }

@@ -193,7 +193,7 @@ TEST( cmdCtrl, periodicManager )
 
     /* Wait for new period to start. */
     while( testCtrl.manager() != 1 ) {};
-    testObj.reset();
+
     /* Measure period. */
     auto time1 = HAL_GetTick();
     while( testCtrl.manager() != 1 ) {};

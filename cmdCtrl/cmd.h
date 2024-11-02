@@ -21,6 +21,8 @@ enum class CmdState: int {  Idle = 0,
                             begin = Idle,
                             end = Max };
 
+
+
 enum class CmdOption: int { None = 0,
                             RepeatOnReply = 1,
                             RepeatOnTimeout = 2,
@@ -31,6 +33,18 @@ enum class CmdOption: int { None = 0,
                             /* helpers. */
                             begin = 0,
                             end = Max };
+
+inline CmdOption operator &(CmdOption lhs, CmdOption rhs) {
+    return static_cast<CmdOption>( static_cast<std::underlying_type_t<CmdOption>>(lhs) & static_cast<std::underlying_type_t<CmdOption>>(rhs) );
+}
+
+inline CmdOption operator |(CmdOption lhs, CmdOption rhs) {
+    return static_cast<CmdOption>( static_cast<std::underlying_type_t<CmdOption>>(lhs) | static_cast<std::underlying_type_t<CmdOption>>(rhs) );
+}
+
+inline CmdOption operator +(CmdOption lhs, CmdOption rhs) {
+    return static_cast<CmdOption>( static_cast<std::underlying_type_t<CmdOption>>(lhs) + static_cast<std::underlying_type_t<CmdOption>>(rhs) );
+}
 
 class CmdObj {
     public:

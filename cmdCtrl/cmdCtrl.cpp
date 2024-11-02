@@ -35,7 +35,7 @@ uint32_t cmdCtrl::manager( void )
     {
         auto idx = prioBuffer[ --i ];
 
-        if( cmdBuffer[ idx ].execute() == CmdState::Done )
+        if( cmdBuffer[ idx ].execute() == CmdState::Done || cmdBuffer[ idx ].execute() == CmdState::Timeout )
         {
             ++isCmdDoneCnt;
 
@@ -105,19 +105,6 @@ bool cmdCtrl::loadCmd(  CmdObj*   pCmdObj,
                 prioBuffer[ i - 1 ] = tmpIdx;
             }
         }
-
-        // if( isReply )
-        // {
-        //     for( Cmd &cmd: cmdBuffer ) 
-        //     { 
-        //         if( ( cmd.token == cmdToken ) && ( cmd.replyType ==  cmdType ) )
-        //         {
-        //             cmd.replied();
-
-        //             break;
-        //         }
-        //     }
-        // }
 
         isCmdAdded = true;           
     } 

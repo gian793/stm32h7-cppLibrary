@@ -126,9 +126,12 @@ TEST( cmd, timeout )
 
     CHECK_TRUE( CmdState::Sent == cmd.execute() );
 
-    while( cmd.execute() != CmdState::Timeout ) {}
+    CmdState state = CmdState::Idle;
 
-    CHECK_TRUE( CmdState::Done == cmd.execute() );
+    do{ state = cmd.execute(); } 
+    while( state  == CmdState::WaitForReply );
+
+    CHECK_TRUE( state == CmdState::Timeout );
 }
 
 TEST( cmd, sendCb_noReply )

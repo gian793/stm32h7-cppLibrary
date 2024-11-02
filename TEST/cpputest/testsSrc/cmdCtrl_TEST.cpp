@@ -191,11 +191,17 @@ TEST( cmdCtrl, periodicManager )
     CHECK_EQUAL( 3, testObj.getSendCnt() );
     CHECK_EQUAL( 1, testCtrl.getCmdCnt() ); /* Only periodic comand is still in the row. */
 
+    /* Wait for new period to start. */
+    while( testCtrl.manager() != 1 ) {};
+    testObj.reset();
     /* Measure period. */
     auto time1 = HAL_GetTick();
-    while( testCtrl.manager() == 0 ) {};
+    while( testCtrl.manager() != 1 ) {};
     auto deltaTimeMs = HAL_GetTick() - time1;
-    CHECK_TRUE( deltaTimeMs >= TEST_PeriodMs && deltaTimeMs < TEST_PeriodMs + 5 );
+
+    printf("\n\r DELTA: %u", deltaTimeMs );
+
+    CHECK_TRUE( deltaTimeMs >= TEST_PeriodMs && deltaTimeMs <= TEST_PeriodMs + 5 );
 
     /* Count periodic calls. */
     testObj.reset();

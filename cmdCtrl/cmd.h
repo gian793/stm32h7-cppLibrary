@@ -7,11 +7,24 @@
 #ifndef CMDCTRL_CMD_H_
 #define CMDCTRL_CMD_H_
 
-enum class CmdState : int { Idle,
+#include <type_traits>
+
+enum class CmdState: int {  Idle = 0,
                             Sent,
                             WaitForReply,
                             Done,
                             Timeout,
+
+                            Max,
+
+                            /* helpers. */
+                            begin = Idle,
+                            end = Max };
+
+enum class CmdOption: int { None = 0,
+                            RepeatOnReply = 1,
+                            RepeatOnTimeout = 2,
+                            RepeatForever = 3,    /* RepeatForever = RepeatOnReply + RepeatOnTimeout */
 
                             Max,
 
@@ -38,7 +51,8 @@ class Cmd {
                         uint32_t  cmdRetryNr   = cmdDefaultRetryNr,
                         uint32_t  cmdTimeoutMs = cmdDefaultTimeoutMs,
                         uint32_t  cmdPeriodMs  = cmdDefaultPeriodMs,
-                        uint32_t  cmdDelayMs   = cmdDefaultDelayMs   ) :
+                        uint32_t  cmdDelayMs   = cmdDefaultDelayMs,
+                        CmdOption cmdOptions   = CmdOption::None   ) :
 
                         type      { cmdType },
                         replyType { cmdReplyType },
@@ -46,7 +60,8 @@ class Cmd {
                         retryNr   { cmdRetryNr },
                         timeoutMs { cmdTimeoutMs },
                         periodMs  { cmdPeriodMs },
-                        delayMs   { cmdDelayMs } {}
+                        delayMs   { cmdDelayMs },
+                        options   { cmdOptions } {}
 
         explicit Cmd(   CmdObj*   pObject, 
                         CmdType   cmdType      = CmdType::noCmd,
@@ -55,7 +70,8 @@ class Cmd {
                         uint32_t  cmdRetryNr   = cmdDefaultRetryNr,
                         uint32_t  cmdTimeoutMs = cmdDefaultTimeoutMs,
                         uint32_t  cmdPeriodMs  = cmdDefaultPeriodMs,
-                        uint32_t  cmdDelayMs   = cmdDefaultDelayMs   ) :
+                        uint32_t  cmdDelayMs   = cmdDefaultDelayMs,
+                        CmdOption cmdOptions   = CmdOption::None   ) :
                 
                         Cmd {   cmdType, 
                                 cmdReplyType, 
@@ -63,7 +79,8 @@ class Cmd {
                                 cmdRetryNr, 
                                 cmdTimeoutMs, 
                                 cmdPeriodMs, 
-                                cmdDelayMs  }
+                                cmdDelayMs,
+                                cmdOptions  }
                         { 
                             setObj( pObject );
                         }
@@ -169,6 +186,8 @@ class Cmd {
         bool      isReply{ false };
 
         bool      isReplied{ false };
+
+        CmdOption options{ CmdOption::None };
 
         uint32_t  getTimerMs( void ) const;
 };

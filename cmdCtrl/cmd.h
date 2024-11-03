@@ -164,6 +164,8 @@ class Cmd {
 
         bool isPeriodic( void ) const { return ( periodMs > 0 ); }
 
+        CmdOption getOptions( void ) { return options; }
+
         CmdType  type;
 
         CmdType  replyType;        /* Command type expected as reply. */

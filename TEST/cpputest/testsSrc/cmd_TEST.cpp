@@ -233,12 +233,18 @@ TEST( cmd, executePeriod )
     }
 }
 
+TEST( cmd, cmdOption )
+{
+    Cmd cmd0{    CmdType::cmd1, CmdType::noCmd, PrioLevel::high, cmdDefaultRetryNr, cmdDefaultTimeoutMs, cmdDefaultPeriodMs, cmdDefaultDelayMs   };
+    Cmd cmd1{    CmdType::cmd1, CmdType::noCmd, PrioLevel::high, cmdDefaultRetryNr, cmdDefaultTimeoutMs, cmdDefaultPeriodMs, cmdDefaultDelayMs, CmdOption::RepeatOnReply };
+    Cmd cmd2{    CmdType::cmd1, CmdType::noCmd, PrioLevel::high, cmdDefaultRetryNr, cmdDefaultTimeoutMs, cmdDefaultPeriodMs, cmdDefaultDelayMs, CmdOption::RepeatOnTimeout };
+    Cmd cmd3{    CmdType::cmd1, CmdType::noCmd, PrioLevel::high, cmdDefaultRetryNr, cmdDefaultTimeoutMs, cmdDefaultPeriodMs, cmdDefaultDelayMs, CmdOption::RepeatForever };
 
-// TEST( cmd, donCb2 )
-// {
-//     Cmd cmd{    CmdType::cmd1, CmdType::noCmd, 
-//                 PrioLevel::high, 
-//                 cmdDefaultRetryNr, cmdDefaultTimeoutMs, cmdDefaultPeriodMs, cmdDefaultDelayMs   };
+    CHECK_TRUE( CmdOption::None            == cmd0.getOptions() );
+    CHECK_TRUE( CmdOption::RepeatOnReply   == cmd1.getOptions() );
+    CHECK_TRUE( CmdOption::RepeatOnTimeout == cmd2.getOptions() );
+    CHECK_TRUE( CmdOption::RepeatForever   == cmd3.getOptions() );
+}
 
 //     myObj localObj;
 

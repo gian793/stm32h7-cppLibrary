@@ -35,7 +35,8 @@ uint32_t cmdCtrl::manager( void )
     {
         auto idx = prioBuffer[ --i ];
 
-        if( cmdBuffer[ idx ].execute() == CmdState::Done || cmdBuffer[ idx ].execute() == CmdState::Timeout )
+        if( cmdBuffer[ idx ].execute() == CmdState::Done || 
+            cmdBuffer[ idx ].execute() == CmdState::Timeout )
         {
             ++isCmdDoneCnt;
 

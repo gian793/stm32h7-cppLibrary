@@ -118,6 +118,22 @@ class cmdCtrl
 
             return rndToken;
         }
+
+        bool deleteCmd( uint32_t priorityBufIdx )
+        {
+            bool isDeleted = false;
+
+            if( priorityBufIdx < cnt )
+            {
+                cmdBuffer[ prioBuffer[ priorityBufIdx ] ].reset();
+                
+                freeIndex( priorityBufIdx ); 
+
+                isDeleted = true;
+            }
+
+            return isDeleted;
+        }
 };
 
 /*---------------------------------------------------------------------------*/

@@ -25,10 +25,10 @@ enum class CmdState: int {  Idle = 0,
 
 /*---------------------------------------------------------------------------*/
 
-enum class CmdOption: int { None = 0,
-                            RepeatOnReply = 1,
+enum class CmdOption: int { None            = 0,
+                            RepeatOnReply   = 1,
                             RepeatOnTimeout = 2,
-                            RepeatForever = 4,    /* RepeatForever = RepeatOnReply + RepeatOnTimeout */
+                            RepeatForever   = 4,   
 
                             Max,
 
@@ -162,17 +162,17 @@ class Cmd {
 
         void replied( void ) { isReplied = ( replyType != CmdType::noCmd ); } /* Flag can be set only if a reply is expected. */
 
-        bool isPeriodic( void ) const { return ( periodMs > 0 ); }
-
         CmdOption getOptions( void ) { return options; }
+
+        const uint32_t getPeriod( void ) { return periodMs; };
 
         CmdType  type;
 
-        CmdType  replyType;        /* Command type expected as reply. */
+        CmdType  replyType;         /* Command type expected as reply. */
 
         PrioLevel priority;
 
-        uint32_t  token{ 0 };      /* Each issued command has an unique token assigned to it. Replies must have the same token used by the issued command they refer to. */
+        uint32_t token{ 0 };        /* Each issued command has an unique token assigned. Replies to a specific command must have the same token. */
 
     private:
 
@@ -190,7 +190,7 @@ class Cmd {
 
         uint32_t  timeoutTimerMs;
 
-
+         
         uint32_t  periodMs;
 
         //uint32_t  periodTimerMs;

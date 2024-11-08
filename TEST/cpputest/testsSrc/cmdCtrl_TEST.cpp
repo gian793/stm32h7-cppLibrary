@@ -245,6 +245,19 @@ TEST( cmdCtrl, replyCmd )
     CHECK_EQUAL( 0, testCtrl.getCmdCnt() );
 }
 
+TEST( cmdCtrl, repeatOnTimeout )
+{
+    cmdCtrl testCtrl;  
+
+    myObj cmd1Obj;
+    myObj replyObj;  
+
+    cmd1Obj.reset();
+    replyObj.reset();
+
+    testCtrl.loadCmd( &cmd1Obj, CmdType::cmd1, CmdType::cmd2,  PrioLevel::low,  12345 );
+}
+
 /*
 TEST( cmdCtrl, pingPoog )
 {

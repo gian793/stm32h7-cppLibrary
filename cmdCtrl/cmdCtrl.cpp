@@ -35,16 +35,24 @@ uint32_t cmdCtrl::manager( void )
     {
         auto idx = prioBuffer[ --i ];
 
-        if( cmdBuffer[ idx ].execute() == CmdState::Done || 
-            cmdBuffer[ idx ].execute() == CmdState::Timeout )
+        if( cmdBuffer[ idx ].execute() == CmdState::Done )
         {
             ++isCmdDoneCnt;
 
-            if( cmdBuffer[ idx ].isPeriodic() == false )
+            if(    ( cmdBuffer[ idx ].getPeriod() == 0 ) && 
+                 ( ( cmdBuffer[ idx ].getOptions() & CmdOption::RepeatOnReply ) == false ) &&  
+                 ( ( cmdBuffer[ idx ].getOptions() & CmdOption::RepeatForever ) == false )   )
             {
-                cmdBuffer[ idx ].reset();
-
-                freeIndex( i ); 
+                deleteCmd( i );
+            }
+        }
+        else if( cmdBuffer[ idx ].execute() == CmdState::Timeout )
+        {
+            if(    ( cmdBuffer[ idx ].getPeriod() == 0 ) && 
+                 ( ( cmdBuffer[ idx ].getOptions() & CmdOption::RepeatOnTimeout ) == false ) &&  
+                 ( ( cmdBuffer[ idx ].getOptions() & CmdOption::RepeatForever )   == false )   )
+            {
+                deleteCmd( i );
             }
         }
     }

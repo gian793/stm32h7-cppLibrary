@@ -35,7 +35,7 @@ uint32_t cmdCtrl::manager( void )
     {
         auto idx = prioBuffer[ --i ];
 
-        if( cmdBuffer[ idx ].execute() == CmdState::Done )
+        if( CmdState::Done == cmdBuffer[ idx ].execute() )
         {
             ++isCmdDoneCnt;
 
@@ -46,7 +46,7 @@ uint32_t cmdCtrl::manager( void )
                 deleteCmd( i );
             }
         }
-        else if( cmdBuffer[ idx ].execute() == CmdState::Timeout )
+        else if( CmdState::Timeout == cmdBuffer[ idx ].execute() )
         {
             if(    ( cmdBuffer[ idx ].getPeriod() == 0 ) && 
                  ( ( cmdBuffer[ idx ].getOptions() & CmdOption::RepeatOnTimeout ) == false ) &&  

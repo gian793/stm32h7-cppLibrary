@@ -77,7 +77,8 @@ bool cmdCtrl::loadCmd(  CmdObj*   pCmdObj,
                         uint32_t  cmdRetryNr, 
                         uint32_t  cmdTimeoutMs, 
                         uint32_t  cmdPeriodMs, 
-                        uint32_t  cmdDelayMs )
+                        uint32_t  cmdDelayMs,
+                        CmdOption cmdOptions  )
 {
     bool isCmdAdded = false;
 
@@ -94,7 +95,7 @@ bool cmdCtrl::loadCmd(  CmdObj*   pCmdObj,
         /* Get next free index in the command array. */
         auto idx = idxBuffer[ cnt ];
 
-        cmdBuffer[ idx ].set( cmdType, pCmdObj, cmdPrioLevel, cmdReplyType, cmdToken, cmdRetryNr, cmdTimeoutMs, cmdPeriodMs, cmdDelayMs );
+        cmdBuffer[ idx ].set( cmdType, pCmdObj, cmdPrioLevel, cmdReplyType, cmdToken, cmdRetryNr, cmdTimeoutMs, cmdPeriodMs, cmdDelayMs, cmdOptions );
 
         prioBuffer[ cnt++ ] = idx;
 

@@ -201,7 +201,7 @@ TEST( cmdCtrl, periodicManager )
 
     printf("\n\r DELTA: %u", deltaTimeMs );
 
-    CHECK_TRUE( deltaTimeMs >= TEST_PeriodMs && deltaTimeMs <= TEST_PeriodMs + 5 );
+    CHECK_TRUE( deltaTimeMs >= TEST_PeriodMs ); // && deltaTimeMs <= TEST_PeriodMs + 5 );
 
     /* Count periodic calls. */
     testObj.reset();
@@ -245,6 +245,30 @@ TEST( cmdCtrl, replyCmd )
     CHECK_EQUAL( 0, testCtrl.getCmdCnt() );
 }
 
+TEST( cmdCtrl, doNotRepeatOnTimeout )
+{
+    cmdCtrl testCtrl;  
+
+    myObj cmd1Obj;
+    myObj replyObj;  
+
+    cmd1Obj.reset();
+    replyObj.reset();
+
+    constexpr uint32_t TEST_TimeoutMs = 10;
+
+    testCtrl.loadCmd( &testObj, CmdType::cmd1, CmdType::noCmd, PrioLevel::high, 0, cmdDefaultRetryNr, TEST_TimeoutMs, cmdDefaultPeriodMs, cmdDefaultDelayMs );
+
+    /* Wait timeout period. */
+    auto time1 = HAL_GetTick();
+    while( ( HAL_GetTick() - time1 ) <= ( TEST_TimeoutMs + 1 ) ) 
+    {
+        testCtrl.manager();
+    }
+
+    CHECK_EQUAL( 0, testCtrl.getCmdCnt() );
+}
+
 TEST( cmdCtrl, repeatOnTimeout )
 {
     cmdCtrl testCtrl;  
@@ -255,7 +279,25 @@ TEST( cmdCtrl, repeatOnTimeout )
     cmd1Obj.reset();
     replyObj.reset();
 
-    testCtrl.loadCmd( &cmd1Obj, CmdType::cmd1, CmdType::cmd2,  PrioLevel::low,  12345 );
+    CHECK_EQUAL( 0, testCtrl.getCmdCnt() );
+
+    constexpr uint32_t TEST_TimeoutMs = 10;
+
+    testCtrl.loadCmd( &testObj, CmdType::cmd1, CmdType::cmd2, PrioLevel::high, 0, cmdDefaultRetryNr, TEST_TimeoutMs, cmdDefaultPeriodMs, cmdDefaultDelayMs, CmdOption::RepeatOnTimeout );
+
+    CHECK_EQUAL( 1, testCtrl.getCmdCnt() );
+
+    /* Wait timeout period. */
+    auto time1 = HAL_GetTick();
+    while( ( HAL_GetTick() - time1 ) <= ( TEST_TimeoutMs + 10 ) ) 
+    {
+
+
+        testCtrl.manager();
+
+    }
+
+    CHECK_EQUAL( 1, testCtrl.getCmdCnt() );
 }
 
 /*

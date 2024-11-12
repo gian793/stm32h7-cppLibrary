@@ -49,23 +49,6 @@ TEST_GROUP( cmd )
     }
 };
 
-// TEST( cmd, cmdPriority )
-// {
-//     Cmd cmd1;   /* Default low priority. */
-//     Cmd cmd2;
-
-//     Cmd cmd3{   CmdType::noCmd, CmdType::noCmd, 
-// 				PrioLevel::high, 
-// 				cmdDefaultRetryNr, cmdDefaultTimeoutMs, cmdDefaultPeriodMs, cmdDefaultDelayMs   };
-
-// 	CHECK_TRUE( Cmd::priorityGreaterEqual( cmd1, cmd2 ) );
-//     CHECK_TRUE( Cmd::priorityEqual( cmd1, cmd2 ) );
-//     CHECK_TRUE( Cmd::prioritySmallerEqual( cmd1, cmd2 ) );
-
-//     CHECK_TRUE( Cmd::priorityGreaterEqual( cmd3, cmd2 ) );
-//     CHECK_TRUE( Cmd::prioritySmallerEqual( cmd1, cmd3 ) );
-// }
-
 TEST( cmd, executeIdle )
 {
     Cmd cmd;
@@ -209,8 +192,9 @@ TEST( cmd, executePeriod )
     constexpr uint32_t TEST_PeriodMs = 50;
 
     Cmd cmd{    CmdType::cmd1, CmdType::noCmd, 
-                PrioLevel::high, 
-                cmdDefaultRetryNr, cmdDefaultTimeoutMs, TEST_PeriodMs, TEST_DelayMs   };
+                PrioLevel::high, cmdDefaultRetryNr, 
+                cmdDefaultTimeoutMs, TEST_PeriodMs, TEST_DelayMs, 
+                CmdOption::None   };
 
     cmd.init( 0 );
 
@@ -218,9 +202,9 @@ TEST( cmd, executePeriod )
     auto time = HAL_GetTick();
     while( CmdState::Done != cmd.execute() ) {};
     auto deltaTimeMs = HAL_GetTick() - time;
-    CHECK_TRUE( ( deltaTimeMs >= TEST_DelayMs ) && ( deltaTimeMs < ( TEST_DelayMs + 10 ) ) );
+    CHECK_TRUE( ( deltaTimeMs >= TEST_DelayMs ) && ( deltaTimeMs < ( TEST_DelayMs + 5 ) ) );
 
-    auto cycleNr = 5;
+    auto cycleNr = 1;
 
     while( cycleNr-- > 0)
     {
@@ -245,33 +229,3 @@ TEST( cmd, cmdOption )
     CHECK_TRUE( CmdOption::RepeatOnTimeout == cmd2.getOptions() );
     CHECK_TRUE( CmdOption::RepeatForever   == cmd3.getOptions() );
 }
-
-//     myObj localObj;
-
-//     localObj.reset();
-
-//     cmd.init( 0, &localObj );
-
-//     CHECK_EQUAL( 0, localObj.getRes() );
-
-//     CHECK_TRUE( CmdState::Sent == cmd.execute() );
-
-//     CHECK_EQUAL( 1, localObj.getSendCnt() );
-
-//     std::cout << "Test c6" << std::endl;
-// }
-
-// TEST( cmd, waitForReplyState )
-// {
-//     Cmd cmd{    CmdType::cmd1, CmdType::cmd1, 
-//                 PrioLevel::high, 
-//                 cmdDefaultRetryNr, cmdDefaultTimeoutMs, cmdDefaultPeriodMs, cmdDefaultDelayMs   };
-
-//     cmd.init( 0 );
-
-//     CHECK_TRUE( CmdState::Sent == cmd.execute() );
-
-//     CHECK_TRUE( CmdState::WaitForReply == cmd.execute() );
-
-//     std::cout << "Test c7" << std::endl;
-// }

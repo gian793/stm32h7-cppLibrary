@@ -30,7 +30,8 @@ class cmdCtrl
                         uint32_t  cmdRetryNr   = cmdDefaultRetryNr, 
                         uint32_t  cmdTimeoutMs = cmdDefaultTimeoutMs, 
                         uint32_t  cmdPeriodMs  = cmdDefaultPeriodMs, 
-                        uint32_t  cmdDelayMs   = cmdDefaultDelayMs );
+                        uint32_t  cmdDelayMs   = cmdDefaultDelayMs,
+                        CmdOption cmdOptions   = CmdOption::None  );
 
         bool loadReply( CmdObj*   pCmdObj, 
                         CmdType   cmdType, 

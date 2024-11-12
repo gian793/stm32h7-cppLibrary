@@ -123,7 +123,8 @@ class Cmd {
                                             retry = 0; 
                                             isReplied = false;
                                             timeoutTimerMs = getTimerMs(); 
-                                            delayTimerMs   = getTimerMs();  }
+                                            delayTimerMs   = getTimerMs();
+                                            options        = CmdOption::None;    }
 
         void init( uint32_t newToken, CmdObj* pObject )  {  init( newToken );
                                                             setObj( pObject );  }
@@ -137,7 +138,8 @@ class Cmd {
                     uint32_t  cmdRetryNr   = cmdDefaultRetryNr,
                     uint32_t  cmdTimeoutMs = cmdDefaultTimeoutMs,
                     uint32_t  cmdPeriodMs  = cmdDefaultPeriodMs,
-                    uint32_t  cmdDelayMs   = cmdDefaultDelayMs   )
+                    uint32_t  cmdDelayMs   = cmdDefaultDelayMs,
+                    CmdOption cmdOptions   = CmdOption::None     )
         {
             init( cmdToken, pObject );
 
@@ -148,6 +150,7 @@ class Cmd {
             timeoutMs = cmdTimeoutMs;
             periodMs  = cmdPeriodMs;
             delayMs   = cmdDelayMs;
+            options   = cmdOptions;
         }
 
         // static bool priorityGreaterEqual( const Cmd &lCmd, const Cmd &rCmd ) { return lCmd.priority >= rCmd.priority; } const

@@ -19,6 +19,9 @@
   * @retval Command state.
   */
 
+#include <iostream>
+#include <cstring>
+
 CmdState Cmd::execute( void )
 {
     if( type != CmdType::noCmd )

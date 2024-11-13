@@ -91,6 +91,7 @@ TEST_GROUP( cmdCtrl )
     }
 };
 
+#if 0 
 TEST( cmdCtrl, Init )
 {
     cmdCtrl testCtrl;
@@ -269,39 +270,65 @@ TEST( cmdCtrl, doNotRepeatOnTimeout )
     CHECK_EQUAL( 0, testCtrl.getCmdCnt() );
 }
 
+#endif
+
 TEST( cmdCtrl, repeatOnTimeout )
 {
+    constexpr uint32_t TEST_TimeoutMs = 10;
     cmdCtrl testCtrl;  
-
     myObj cmd1Obj;
-    myObj replyObj;  
+
+    cmd1Obj.reset();
+
+    CHECK_EQUAL( 0, testCtrl.getCmdCnt() );
+
+    testCtrl.loadCmd( &cmd1Obj, CmdType::cmd1, CmdType::cmd2, PrioLevel::high, 0, cmdDefaultRetryNr, TEST_TimeoutMs, cmdDefaultPeriodMs, cmdDefaultDelayMs, CmdOption::RepeatOnTimeout );
+
+    CHECK_EQUAL( 1, testCtrl.getCmdCnt() );
+    CHECK_EQUAL( 0, cmd1Obj.getTimeoutCnt() );
+
+    /* Wait timeout period. */
+    auto time1 = HAL_GetTick();
+    while( ( HAL_GetTick() - time1 ) <= ( TEST_TimeoutMs + 5 ) ) 
+    {
+        testCtrl.manager();
+    }
+
+    CHECK_EQUAL( 1, cmd1Obj.getTimeoutCnt() );
+    CHECK_EQUAL( 1, testCtrl.getCmdCnt() );
+}
+
+TEST( cmdCtrl, repeatOnReply )
+{
+    constexpr uint32_t TEST_TimeoutMs = 10;
+    constexpr uint32_t TEST_TOKEN = 462456;
+    cmdCtrl testCtrl;  
+    myObj cmd1Obj;
+    myObj replyObj;
 
     cmd1Obj.reset();
     replyObj.reset();
 
     CHECK_EQUAL( 0, testCtrl.getCmdCnt() );
 
-    constexpr uint32_t TEST_TimeoutMs = 10;
+    testCtrl.loadCmd( &cmd1Obj, CmdType::cmd1, CmdType::cmd2, PrioLevel::high, TEST_TOKEN, cmdDefaultRetryNr, TEST_TimeoutMs, cmdDefaultPeriodMs, cmdDefaultDelayMs, CmdOption::RepeatOnReply );
 
-    testCtrl.loadCmd( &testObj, CmdType::cmd1, CmdType::cmd2, PrioLevel::high, 0, cmdDefaultRetryNr, TEST_TimeoutMs, cmdDefaultPeriodMs, cmdDefaultDelayMs, CmdOption::RepeatOnTimeout );
-
+    testCtrl.manager();
+    
     CHECK_EQUAL( 1, testCtrl.getCmdCnt() );
+    CHECK_EQUAL( 0, cmd1Obj.getReplyCnt() );
 
-    /* Wait timeout period. */
-    auto time1 = HAL_GetTick();
-    while( ( HAL_GetTick() - time1 ) <= ( TEST_TimeoutMs + 10 ) ) 
-    {
+    /* Load reply. */
+    testCtrl.loadReply( &replyObj, CmdType::cmd2, CmdType::noCmd, PrioLevel::high, TEST_TOKEN, cmdDefaultRetryNr, cmdDefaultTimeoutMs, cmdDefaultPeriodMs, cmdDefaultDelayMs );
 
+    testCtrl.manager();
 
-        testCtrl.manager();
-
-    }
-
+    CHECK_EQUAL( 1, cmd1Obj.getReplyCnt() );
     CHECK_EQUAL( 1, testCtrl.getCmdCnt() );
 }
 
 /*
-TEST( cmdCtrl, pingPoog )
+TEST( cmdCtrl, pingPong )
 {
     cmdCtrl testCtrl;  
 

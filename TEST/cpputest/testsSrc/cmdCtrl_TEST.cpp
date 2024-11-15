@@ -304,10 +304,8 @@ TEST( cmdCtrl, repeatOnReply )
     constexpr uint32_t TEST_TOKEN = 462456;
     cmdCtrl testCtrl;  
     myObj cmd1Obj;
-    myObj replyObj;
 
     cmd1Obj.reset();
-    replyObj.reset();
 
     CHECK_EQUAL( 0, testCtrl.getCmdCnt() );
 
@@ -319,7 +317,7 @@ TEST( cmdCtrl, repeatOnReply )
     CHECK_EQUAL( 0, cmd1Obj.getReplyCnt() );
 
     /* Load reply. */
-    testCtrl.loadReply( &replyObj, CmdType::cmd2, CmdType::noCmd, PrioLevel::high, TEST_TOKEN, cmdDefaultRetryNr, cmdDefaultTimeoutMs, cmdDefaultPeriodMs, cmdDefaultDelayMs );
+    testCtrl.loadReply( nullptr, CmdType::cmd2, CmdType::noCmd, PrioLevel::high, TEST_TOKEN, cmdDefaultRetryNr, cmdDefaultTimeoutMs, cmdDefaultPeriodMs, cmdDefaultDelayMs );
 
     testCtrl.manager();
 

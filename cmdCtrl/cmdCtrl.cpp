@@ -51,7 +51,7 @@ uint32_t cmdCtrl::manager( void )
         else if( cmdState == CmdState::Timeout )
         {
             if(    ( cmdBuffer[ idx ].getPeriod() == 0 ) && 
-                   ( cmdBuffer[ idx ].isRetry() == false ) && 
+                   ( cmdBuffer[ idx ].isRetryDone() == true ) && 
                  ( ( cmdBuffer[ idx ].getOptions() & CmdOption::RepeatOnTimeout ) == false ) &&  
                  ( ( cmdBuffer[ idx ].getOptions() & CmdOption::RepeatForever )   == false )   )
             {

@@ -169,7 +169,7 @@ class Cmd {
 
         const uint32_t getPeriod( void ) { return periodMs; };
 
-        const bool isRetry( void ) { return ( retryCnt < retryNr ); };
+        const bool isRetryDone( void ) { return ( retryCnt >= retryNr ); };
 
         CmdType  type;
 

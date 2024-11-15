@@ -7,6 +7,8 @@
 // #include <algorithm>
 // #include <array>
 #include <cstdint>
+#include <iostream>
+#include <cstring>
 
 // #include "stm32_lock.h"
 #include "stm32h7xx_hal.h"
@@ -18,9 +20,6 @@
   * @param  None.
   * @retval Command state.
   */
-
-#include <iostream>
-#include <cstring>
 
 CmdState Cmd::execute( void )
 {
@@ -52,7 +51,7 @@ CmdState Cmd::execute( void )
             case CmdState::Sent:
                 state = CmdState::WaitForReply;
 
-            case CmdState::WaitForReply:
+            case CmdState::WaitForReply:                
                 if( isReplied )
                 {
                     pObj->reply();
@@ -68,7 +67,8 @@ CmdState Cmd::execute( void )
                 break;
 
             case CmdState::Timeout:
-                if( options & CmdOption::RepeatOnTimeout )
+                if( ( options & CmdOption::RepeatOnTimeout ) || 
+                    ( retryCnt++ < retryNr) ) 
                 {
                     state = CmdState::Idle;
                 }

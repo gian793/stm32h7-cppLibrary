@@ -91,7 +91,7 @@ TEST_GROUP( cmdCtrl )
     }
 };
 
-#if 0 
+//#if 0 
 TEST( cmdCtrl, Init )
 {
     cmdCtrl testCtrl;
@@ -270,8 +270,6 @@ TEST( cmdCtrl, doNotRepeatOnTimeout )
     CHECK_EQUAL( 0, testCtrl.getCmdCnt() );
 }
 
-#endif
-
 TEST( cmdCtrl, repeatOnTimeout )
 {
     constexpr uint32_t TEST_TimeoutMs = 10;
@@ -323,6 +321,52 @@ TEST( cmdCtrl, repeatOnReply )
 
     CHECK_EQUAL( 1, cmd1Obj.getReplyCnt() );
     CHECK_EQUAL( 1, testCtrl.getCmdCnt() );
+}
+
+TEST( cmdCtrl, repeatForever )
+{
+    constexpr uint32_t LOOP_CNT_TEST = 10;
+    cmdCtrl testCtrl;  
+    myObj cmd1Obj;
+
+    cmd1Obj.reset();
+
+    CHECK_EQUAL( 0, cmd1Obj.getSendCnt() );
+
+    testCtrl.loadCmd( &cmd1Obj, CmdType::cmd1, CmdType::noCmd, PrioLevel::high, 0, cmdDefaultRetryNr, cmdDefaultTimeoutMs, cmdDefaultPeriodMs, cmdDefaultDelayMs, CmdOption::RepeatForever );
+
+    for( uint32_t i = 0; i < LOOP_CNT_TEST  ; ++i )
+    {
+        testCtrl.manager(); /* Send execution. */
+        testCtrl.manager(); /* Done execution. */
+    }
+    
+    CHECK_EQUAL( LOOP_CNT_TEST, cmd1Obj.getSendCnt() );
+}
+//#endif
+
+TEST( cmdCtrl, retry )
+{
+    constexpr uint32_t retryNR_TEST = 3;
+    constexpr uint32_t LOOP_CNT_TEST = 10*retryNR_TEST; /* Do it many times. */
+    cmdCtrl testCtrl;  
+    myObj cmd1Obj;
+
+    cmd1Obj.reset();
+
+    CHECK_EQUAL( 0, cmd1Obj.getSendCnt() );
+
+    testCtrl.loadCmd( &cmd1Obj, CmdType::cmd1, CmdType::cmd2, PrioLevel::high, 0, cmdDefaultRetryNr, 0, cmdDefaultPeriodMs, cmdDefaultDelayMs );
+
+    CHECK_EQUAL( 1, testCtrl.getCmdCnt() );
+
+    for( uint32_t i = 0; i < LOOP_CNT_TEST  ; ++i )
+    {
+        testCtrl.manager(); /* Send execution. */
+        testCtrl.manager(); /* Done execution. */
+    }
+    
+    CHECK_EQUAL( retryNR_TEST + 1, cmd1Obj.getSendCnt() );
 }
 
 /*

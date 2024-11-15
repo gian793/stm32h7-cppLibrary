@@ -120,8 +120,8 @@ class Cmd {
         /* Initialization of state machine: state and timers init. */
         void init( uint32_t newToken )  {   token = newToken; 
                                             state = CmdState::Idle; 
-                                            retry = 0; 
                                             isReplied = false;
+                                            retryCnt  = 0;
                                             timeoutTimerMs = getTimerMs(); 
                                             delayTimerMs   = getTimerMs();
                                             options        = CmdOption::None;    }
@@ -169,6 +169,8 @@ class Cmd {
 
         const uint32_t getPeriod( void ) { return periodMs; };
 
+        const bool isRetry( void ) { return ( retryCnt < retryNr ); };
+
         CmdType  type;
 
         CmdType  replyType;         /* Command type expected as reply. */
@@ -186,7 +188,7 @@ class Cmd {
 
         uint32_t  retryNr;
 
-        uint32_t  retry;
+        uint32_t  retryCnt;
 
 
         uint32_t  timeoutMs;

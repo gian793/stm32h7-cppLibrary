@@ -35,7 +35,9 @@ uint32_t cmdCtrl::manager( void )
     {
         auto idx = prioBuffer[ --i ];
 
-        if( CmdState::Done == cmdBuffer[ idx ].execute() )
+        CmdState cmdState = cmdBuffer[ idx ].execute();
+
+        if( cmdState == CmdState::Done )
         {
             ++isCmdDoneCnt;
 
@@ -46,9 +48,10 @@ uint32_t cmdCtrl::manager( void )
                 deleteCmd( i );
             }
         }
-        else if( CmdState::Timeout == cmdBuffer[ idx ].execute() )
+        else if( cmdState == CmdState::Timeout )
         {
             if(    ( cmdBuffer[ idx ].getPeriod() == 0 ) && 
+                   ( cmdBuffer[ idx ].isRetry() == false ) && 
                  ( ( cmdBuffer[ idx ].getOptions() & CmdOption::RepeatOnTimeout ) == false ) &&  
                  ( ( cmdBuffer[ idx ].getOptions() & CmdOption::RepeatForever )   == false )   )
             {
@@ -65,7 +68,8 @@ uint32_t cmdCtrl::manager( void )
 
 /**
   * @brief  Load a command to be executed.
-  * @param  Command to be transmitted.
+  * @param  pCmdObj - Command object, if needed. Can be set to nullptr.
+  *         cmdType - Type of command.
   * @retval True if command added successfully to tx buffer.
   */
 

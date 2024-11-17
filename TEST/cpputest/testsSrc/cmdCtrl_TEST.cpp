@@ -345,7 +345,7 @@ TEST( cmdCtrl, repeatForever )
 }
 //#endif
 
-TEST( cmdCtrl, retry )
+TEST( cmdCtrl, retryCnt )
 {
     constexpr uint32_t retryNR_TEST = 3;
     constexpr uint32_t LOOP_CNT_TEST = 10*retryNR_TEST; /* Do it many times. */

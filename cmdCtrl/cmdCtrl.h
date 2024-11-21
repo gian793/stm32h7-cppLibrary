@@ -57,15 +57,14 @@ class cmdCtrl
 
         LockingData_t cmdLock;
 
-        std::array<Cmd,      cmdBufferSize> cmdBuffer;  /* In-coming commands or replies to out-going commands. */
-        std::array<uint32_t, cmdBufferSize> prioBuffer = {0}; /* Increasing priority order, index=0 has lowest priority. */
-        std::array<uint32_t, cmdBufferSize> idxBuffer = {0};  /* Next command free index. Indexes < cnt are already in use. Indexes >= cnt are free. */
+        std::array<Cmd, cmdBufferSize> cmdBuffer;  /* In-coming commands or replies to out-going commands. */
 
-        uint32_t cnt{0};                                /* Number of commands to execute. */
+        using idxArray = std::array<uint32_t, cmdBufferSize>;
 
-        uint32_t nextIdx{0};                            /* Index of the next command to load. */
+        idxArray prioBuffer = {0};      /* Increasing priority order, index=0 has lowest priority. */
+        idxArray idxBuffer  = {0};      /* Next command free index. Indexes < cnt are already in use. Indexes >= cnt are free. */
 
-        // Test comment ++
+        uint32_t cnt{0};                /* Number of commands loaded (to execute). */
 
         void reset( void ) 
         { 
@@ -78,58 +77,62 @@ class cmdCtrl
         }
 
         Cmd getCmd( uint32_t cmdIdx )  { return cmdBuffer[ cmdIdx ]; }
+            
+        bool removeArrayElement( idxArray &array, uint32_t elemIndex, uint32_t arraySize ) 
+        {
+            bool isRemoved = false;
 
+            if( elemIndex < arraySize )
+            {
+                for( auto i=elemIndex; i < ( arraySize - 1 ); ++i )
+                {
+                    array[ i ] = array[ i + 1 ];
+                }
+
+                isRemoved = true;
+            }
+
+            return isRemoved;
+        }
 
         bool freeIndex( uint32_t idx ) 
         { 
-            bool isIndexFound = false;
-            bool isPriorityFound = false;
+            uint32_t removedCnt = 0;
 
-            for( uint32_t i = 0; i < cnt; ++i )   
+            /* Check and removed idx from prioBuffer. */
+            uint32_t arraySize = cnt;
+            uint32_t i = 0;
+            while( i < arraySize )   
             {
-                /* Remove idx from idxBuffer. */
-                if( isIndexFound == false )
+                if( ( prioBuffer[ i ] == idx ) && removeArrayElement( prioBuffer, i, arraySize ) )
                 {
-                    if( idxBuffer[ i ] == idx )
-                    {
-                        isIndexFound = true;
-
-                        if( i != cnt - 1 )
-                        {
-                            idxBuffer[ i ] = idxBuffer[ i + 1 ];
-                        }
-                    }
+                    --arraySize;
                 }
                 else
                 {
-                    idxBuffer[ i ] = idxBuffer[ i + 1 ];
+                    ++i;
                 }
+            }
 
-                /* Remove idx from prioBuffer. */
-                if( isPriorityFound == false )
+            /* Check and removed idx from idxBuffer. */
+            arraySize = cnt;
+            i = 0;
+            while( i < arraySize )   
+            {
+                if( ( idxBuffer[ i ] == idx ) && removeArrayElement( idxBuffer, i, arraySize ) )
                 {
-                    if( prioBuffer[ i ] == idx )
-                    {
-                        isPriorityFound = true;
-                        
-                        if( i != cnt - 1 )
-                        {
-                            prioBuffer[ i ] = prioBuffer[ i + 1 ];
-                        }
-                    }
+                    --arraySize;
+                    ++removedCnt;
                 }
                 else
                 {
-                    prioBuffer[ i ] = prioBuffer[ i + 1 ];
+                    ++i;
                 }
             }
 
-            if( isIndexFound )
-            {
-                --cnt;
-            }
+            cnt -= removedCnt;
 
-            return isIndexFound;
+            return ( removedCnt > 0 );
         }
 
         uint32_t getNewToken( void )

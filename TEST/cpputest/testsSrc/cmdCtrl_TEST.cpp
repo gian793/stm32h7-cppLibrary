@@ -462,20 +462,16 @@ TEST( cmdCtrl, pingPong )
     ctrlPingPong.loadCmd( &cmdPing, CmdType::cmd1, CmdType::cmd2, PrioLevel::high, TEST_TOKEN, cmdDefaultRetryNr, cmdDefaultTimeoutMs, cmdDefaultPeriodMs, cmdDefaultDelayMs, CmdOption::RepeatOnReply );
 
     while( testLoopCnt-- > 0 )
-    {    
-        /* From Idle -> send the comamnd -> goes to witForReply. */   
-        ctrlPingPong.manager();
+    {      
+        ctrlPingPong.manager();     /* Idle -> Sent -> WaitForReply. */ 
 
         /* Load the reply. */   
         ctrlPingPong.loadReply( nullptr, CmdType::cmd2, CmdType::noCmd, PrioLevel::high, TEST_TOKEN, cmdDefaultRetryNr, cmdDefaultTimeoutMs, cmdDefaultPeriodMs, cmdDefaultDelayMs );
  
         ++replyCnt;
            
-        /* Reply received -> goes to Done. */ 
-        ctrlPingPong.manager(); 
-
-        /* From DOne -> goes to Idle*/
-        ctrlPingPong.manager();
+        ctrlPingPong.manager();     /* WaitForReply -> Done. */ 
+        ctrlPingPong.manager();     /* Done         -> Idle. */
 
         CHECK_EQUAL( 1, ctrlPingPong.getCmdCnt() );
         CHECK_EQUAL( replyCnt, cmdPing.getReplyCnt() );

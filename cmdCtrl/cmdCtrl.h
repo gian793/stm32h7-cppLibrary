@@ -9,7 +9,8 @@
 
 /*---------------------------------------------------------------------------*/
 
-
+#include <iostream>
+#include <cstring>
 
 /*---------------------------------------------------------------------------*/
 
@@ -44,7 +45,9 @@ class cmdCtrl
                         uint32_t  cmdPeriodMs  = cmdDefaultPeriodMs, 
                         uint32_t  cmdDelayMs   = cmdDefaultDelayMs );
 
-        bool removeCmd( uint32_t token );
+        bool removeCmdByToken( uint32_t token );
+
+        bool removeCmdByIdx( uint32_t idx );
 
         uint32_t getCmdCnt( void ) { return cnt; } 
 
@@ -55,8 +58,8 @@ class cmdCtrl
         LockingData_t cmdLock;
 
         std::array<Cmd,      cmdBufferSize> cmdBuffer;  /* In-coming commands or replies to out-going commands. */
-        std::array<uint32_t, cmdBufferSize> prioBuffer; /* Increasing priority order, index=0 has lowest priority. */
-        std::array<uint32_t, cmdBufferSize> idxBuffer;  /* Next command free index. */
+        std::array<uint32_t, cmdBufferSize> prioBuffer = {0}; /* Increasing priority order, index=0 has lowest priority. */
+        std::array<uint32_t, cmdBufferSize> idxBuffer = {0};  /* Next command free index. Indexes < cnt are already in use. Indexes >= cnt are free. */
 
         uint32_t cnt{0};                                /* Number of commands to execute. */
 
@@ -76,33 +79,58 @@ class cmdCtrl
 
         Cmd getCmd( uint32_t cmdIdx )  { return cmdBuffer[ cmdIdx ]; }
 
-        void freeIndex( uint32_t idx ) 
+
+        bool freeIndex( uint32_t idx ) 
         { 
-            bool isFound = false;
+            bool isIndexFound = false;
+            bool isPriorityFound = false;
 
-            /* Remove idx from priority buffer. */
-            for( auto i = idx; i < cnt - 1; ++i )   
+            for( uint32_t i = 0; i < cnt; ++i )   
             {
-                prioBuffer[ i ] = prioBuffer[ i + 1 ];
-            }
-
-            /* Remove idx from index buffer. */
-            for( uint32_t i = 0; i < cnt - 1; ++i )   
-            {
-                if( idxBuffer[ i ] == idx )
+                /* Remove idx from idxBuffer. */
+                if( isIndexFound == false )
                 {
-                    isFound = true;
-                }
+                    if( idxBuffer[ i ] == idx )
+                    {
+                        isIndexFound = true;
 
-                if( isFound )
+                        if( i != cnt - 1 )
+                        {
+                            idxBuffer[ i ] = idxBuffer[ i + 1 ];
+                        }
+                    }
+                }
+                else
                 {
                     idxBuffer[ i ] = idxBuffer[ i + 1 ];
                 }
+
+                /* Remove idx from prioBuffer. */
+                if( isPriorityFound == false )
+                {
+                    if( prioBuffer[ i ] == idx )
+                    {
+                        isPriorityFound = true;
+                        
+                        if( i != cnt - 1 )
+                        {
+                            prioBuffer[ i ] = prioBuffer[ i + 1 ];
+                        }
+                    }
+                }
+                else
+                {
+                    prioBuffer[ i ] = prioBuffer[ i + 1 ];
+                }
             }
 
-            /* Add idx to available index buffer. */
-            idxBuffer[ --cnt ] = idx;
-        }; 
+            if( isIndexFound )
+            {
+                --cnt;
+            }
+
+            return isIndexFound;
+        }
 
         uint32_t getNewToken( void )
         {
@@ -118,22 +146,6 @@ class cmdCtrl
             }
 
             return rndToken;
-        }
-
-        bool deleteCmd( uint32_t priorityBufIdx )
-        {
-            bool isDeleted = false;
-
-            if( priorityBufIdx < cnt )
-            {
-                cmdBuffer[ prioBuffer[ priorityBufIdx ] ].reset();
-                
-                freeIndex( priorityBufIdx ); 
-
-                isDeleted = true;
-            }
-
-            return isDeleted;
         }
 };
 

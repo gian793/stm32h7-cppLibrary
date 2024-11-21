@@ -30,7 +30,7 @@ uint32_t cmdCtrl::manager( void )
     stm32_lock_acquire( &cmdLock );
 
     auto i = cnt;
-
+    
     while( i > 0 )
     {
         auto idx = prioBuffer[ --i ];
@@ -45,7 +45,7 @@ uint32_t cmdCtrl::manager( void )
                  ( ( cmdBuffer[ idx ].getOptions() & CmdOption::RepeatOnReply ) == false ) &&  
                  ( ( cmdBuffer[ idx ].getOptions() & CmdOption::RepeatForever ) == false )   )
             {
-                deleteCmd( i );
+                removeCmdByIdx( idx );
             }
         }
         else if( cmdState == CmdState::Timeout )
@@ -55,7 +55,7 @@ uint32_t cmdCtrl::manager( void )
                  ( ( cmdBuffer[ idx ].getOptions() & CmdOption::RepeatOnTimeout ) == false ) &&  
                  ( ( cmdBuffer[ idx ].getOptions() & CmdOption::RepeatForever )   == false )   )
             {
-                deleteCmd( i );
+                removeCmdByIdx( idx );
             }
         }
     }
@@ -103,7 +103,7 @@ bool cmdCtrl::loadCmd(  CmdObj*   pCmdObj,
 
         prioBuffer[ cnt++ ] = idx;
 
-        /* Low priority cmds first. */
+        /* Re-sort prioBuffer, low priority cmds first. */
         for( auto i = cnt - 1; i > 0; --i )
         {
             if( cmdBuffer[ prioBuffer[ i ] ].priority > cmdBuffer[ prioBuffer[ i - 1 ] ].priority )
@@ -165,27 +165,45 @@ bool cmdCtrl::loadReply(    CmdObj*   pCmdObj,
     return isReplyAdded;
 }
 
-/** @brief  Remove the command with specified token.
+/** @brief  Remove the command with specified token. If command and reply are both in the buffer (with same token), both are removed.
   * @param  Token of the command to remove.
   * @retval True if the command has been (found) and removed.
   */
 
-bool cmdCtrl::removeCmd( uint32_t token )
+bool cmdCtrl::removeCmdByToken( uint32_t token )
 {
     bool isCmdRemoved = false;
 
-    for( uint32_t i = 0; i < cnt; ++i )   
+    uint32_t i = cnt;
+
+    while ( i > 0 )
     {
-        auto idx = idxBuffer[ i ];
+        auto idx = idxBuffer[ --i ];
 
         if( cmdBuffer[ idx ].token == token )
         {
             cmdBuffer[ idx ].reset();
-
-            freeIndex( idx ); 
-
-            isCmdRemoved = true;
+            
+            isCmdRemoved = freeIndex( idx );
         }
+    }
+
+    return isCmdRemoved;
+}
+
+/** @brief  Remove the command with specified index.
+  * @param  Index of the command to remove.
+  * @retval True if the command has been (found) and removed.
+  */
+bool cmdCtrl::removeCmdByIdx( uint32_t idx )
+{
+    bool isCmdRemoved = false;
+
+    if( freeIndex( idx ) )
+    {
+        cmdBuffer[ idx ].reset();
+
+        isCmdRemoved = true;
     }
 
     return isCmdRemoved;

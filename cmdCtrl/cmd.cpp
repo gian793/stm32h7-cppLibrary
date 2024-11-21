@@ -32,8 +32,9 @@ CmdState Cmd::execute( void )
             case CmdState::Idle:
                 if( ( timerMs - delayTimerMs ) >= delayMs )
                 {
+                    /* If periodic, the period is traslated in a delay and the next check done on the delay. */
                     if( periodMs > 0 )
-                    {   /* Compensation. */
+                    {   
                         auto deltaMs = ( timerMs - delayTimerMs ) - delayMs;
 
                         delayMs = ( periodMs > deltaMs ) ? ( periodMs - deltaMs ) : 0 ;
@@ -41,7 +42,6 @@ CmdState Cmd::execute( void )
 
                     delayTimerMs   = timerMs;
                     timeoutTimerMs = timerMs;
-
                     pObj->send();
 
                     state = ( replyType != CmdType::noCmd ) ? CmdState::Sent : CmdState::Done;
@@ -51,14 +51,14 @@ CmdState Cmd::execute( void )
             case CmdState::Sent:
                 state = CmdState::WaitForReply;
 
-            case CmdState::WaitForReply:                
+            case CmdState::WaitForReply:              
                 if( isReplied )
                 {
                     pObj->reply();
 
                     state = CmdState::Done;
                 }
-                else if( ( timerMs - timeoutTimerMs ) >= timeoutMs )
+                else if( ( timeoutMs > 0 ) && ( timerMs - timeoutTimerMs ) >= timeoutMs )
                 {
                     pObj->timeout();
 

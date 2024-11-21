@@ -91,7 +91,7 @@ TEST_GROUP( cmdCtrl )
     }
 };
 
-//#if 0 
+// #if 0 
 TEST( cmdCtrl, Init )
 {
     cmdCtrl testCtrl;
@@ -158,7 +158,7 @@ TEST( cmdCtrl, notEmptyManager )
    CHECK_TRUE( testCtrl.manager() == 3 );
 }
 
-TEST( cmdCtrl, removeCmd )
+TEST( cmdCtrl, removeCmdByToken )
 {
     cmdCtrl testCtrl;
 
@@ -169,13 +169,13 @@ TEST( cmdCtrl, removeCmd )
     
     CHECK_EQUAL( 4, testCtrl.getCmdCnt() );
 
-    CHECK_TRUE( testCtrl.removeCmd( 33333 ) );
+    CHECK_TRUE( testCtrl.removeCmdByToken( 33333 ) );
     CHECK_EQUAL( 3, testCtrl.getCmdCnt() );
-    CHECK_TRUE( testCtrl.removeCmd( 55555 ) );
+    CHECK_TRUE( testCtrl.removeCmdByToken( 55555 ) );
     CHECK_EQUAL( 2, testCtrl.getCmdCnt() );
 
     /* false remove. */
-    CHECK_FALSE( testCtrl.removeCmd( 33333 ) );
+    CHECK_FALSE( testCtrl.removeCmdByToken( 33333 ) );
     CHECK_EQUAL( 2, testCtrl.getCmdCnt() );
 }
 
@@ -210,6 +210,76 @@ TEST( cmdCtrl, periodicManager )
     time1 = HAL_GetTick();
     while( ( HAL_GetTick() - time1 ) < 3*TEST_PeriodMs + 5 ){ testCtrl.manager(); }
     CHECK_EQUAL( 3, testObj.getSendCnt() );
+}
+
+TEST( cmdCtrl, replyWrongCmd )
+{
+    cmdCtrl testCtrl;  
+    constexpr uint32_t testTOKEN = 12345;
+
+    myObj cmd1Obj;
+    myObj replyObj;  
+
+    cmd1Obj.reset();
+    replyObj.reset();
+
+    testCtrl.loadCmd( &cmd1Obj, CmdType::cmd1, CmdType::cmd2,  PrioLevel::low,  testTOKEN );
+
+    /* Bring cmd1 in wait for reply state. */
+    testCtrl.manager();
+    CHECK_EQUAL( 1, cmd1Obj.getSendCnt() );
+
+    /* Load wrong cmd reply (Cmd3 instead of Cmd2). */
+    testCtrl.loadReply( &replyObj, CmdType::cmd3, CmdType::noCmd, PrioLevel::high, testTOKEN );
+    CHECK_EQUAL( 2, testCtrl.getCmdCnt() );
+
+    /* Close cmd1. */
+    testCtrl.manager();
+
+    CHECK_EQUAL( 1, cmd1Obj.getSendCnt() );
+    CHECK_EQUAL( 0, cmd1Obj.getReplyCnt() );
+    CHECK_EQUAL( 0, cmd1Obj.getTimeoutCnt() );
+
+    CHECK_EQUAL( 1, replyObj.getSendCnt() );
+    CHECK_EQUAL( 0, replyObj.getReplyCnt() );
+    CHECK_EQUAL( 0, replyObj.getTimeoutCnt() );
+
+    CHECK_EQUAL( 1, testCtrl.getCmdCnt() );
+}
+
+TEST( cmdCtrl, replyWrongToken )
+{
+    cmdCtrl testCtrl;  
+    constexpr uint32_t testTOKEN = 12345;
+
+    myObj cmd1Obj;
+    myObj replyObj;  
+
+    cmd1Obj.reset();
+    replyObj.reset();
+
+    testCtrl.loadCmd( &cmd1Obj, CmdType::cmd1, CmdType::cmd2,  PrioLevel::low,  testTOKEN );
+
+    /* Bring cmd1 in wait for reply state. */
+    testCtrl.manager();
+    CHECK_EQUAL( 1, cmd1Obj.getSendCnt() );
+
+    /* Load wrong cmd reply (worng token). */
+    testCtrl.loadReply( &replyObj, CmdType::cmd2, CmdType::noCmd, PrioLevel::high, testTOKEN+1 );
+    CHECK_EQUAL( 2, testCtrl.getCmdCnt() );
+
+    /* Close cmd1. */
+    testCtrl.manager();
+
+    CHECK_EQUAL( 1, cmd1Obj.getSendCnt() );
+    CHECK_EQUAL( 0, cmd1Obj.getReplyCnt() );
+    CHECK_EQUAL( 0, cmd1Obj.getTimeoutCnt() );
+
+    CHECK_EQUAL( 1, replyObj.getSendCnt() );
+    CHECK_EQUAL( 0, replyObj.getReplyCnt() );
+    CHECK_EQUAL( 0, replyObj.getTimeoutCnt() );
+
+    CHECK_EQUAL( 1, testCtrl.getCmdCnt() );
 }
 
 TEST( cmdCtrl, replyCmd )
@@ -317,6 +387,8 @@ TEST( cmdCtrl, repeatOnReply )
     /* Load reply. */
     testCtrl.loadReply( nullptr, CmdType::cmd2, CmdType::noCmd, PrioLevel::high, TEST_TOKEN, cmdDefaultRetryNr, cmdDefaultTimeoutMs, cmdDefaultPeriodMs, cmdDefaultDelayMs );
 
+    CHECK_EQUAL( 2, testCtrl.getCmdCnt() );
+
     testCtrl.manager();
 
     CHECK_EQUAL( 1, cmd1Obj.getReplyCnt() );
@@ -343,11 +415,12 @@ TEST( cmdCtrl, repeatForever )
     
     CHECK_EQUAL( LOOP_CNT_TEST, cmd1Obj.getSendCnt() );
 }
-//#endif
+// #endif
 
 TEST( cmdCtrl, retryCnt )
 {
     constexpr uint32_t retryNR_TEST = 3;
+    constexpr uint32_t timeoutMs_TEST = 1;
     constexpr uint32_t LOOP_CNT_TEST = 10*retryNR_TEST; /* Do it many times. */
     cmdCtrl testCtrl;  
     myObj cmd1Obj;
@@ -356,25 +429,55 @@ TEST( cmdCtrl, retryCnt )
 
     CHECK_EQUAL( 0, cmd1Obj.getSendCnt() );
 
-    testCtrl.loadCmd( &cmd1Obj, CmdType::cmd1, CmdType::cmd2, PrioLevel::high, 0, cmdDefaultRetryNr, 0, cmdDefaultPeriodMs, cmdDefaultDelayMs );
+    testCtrl.loadCmd( &cmd1Obj, CmdType::cmd1, CmdType::cmd2, PrioLevel::high, 0, cmdDefaultRetryNr, timeoutMs_TEST, cmdDefaultPeriodMs, cmdDefaultDelayMs );
 
     CHECK_EQUAL( 1, testCtrl.getCmdCnt() );
 
     for( uint32_t i = 0; i < LOOP_CNT_TEST  ; ++i )
     {
-        testCtrl.manager(); /* Send execution. */
-        testCtrl.manager(); /* Done execution. */
+        testCtrl.manager(); /* Idle -> Sent. */
+
+        auto time = HAL_GetTick();
+        while( ( HAL_GetTick() - time ) < timeoutMs_TEST ) {}
+
+        testCtrl.manager(); /* Wait for reply -> Timeout. */
+        testCtrl.manager(); /* Done -> Idle. */
     }
     
     CHECK_EQUAL( retryNR_TEST + 1, cmd1Obj.getSendCnt() );
 }
 
-/*
 TEST( cmdCtrl, pingPong )
 {
-    cmdCtrl testCtrl;  
+    constexpr uint32_t TEST_TOKEN = 462456;
+    uint32_t testLoopCnt = 10;
+    cmdCtrl ctrlPingPong;  
+    myObj cmdPing;
+    uint32_t replyCnt = 0;
 
-    myObj pingObj;
-    myObj pongObj;
+    cmdPing.reset();
+
+    CHECK_EQUAL( 0, ctrlPingPong.getCmdCnt() );
+    
+    ctrlPingPong.loadCmd( &cmdPing, CmdType::cmd1, CmdType::cmd2, PrioLevel::high, TEST_TOKEN, cmdDefaultRetryNr, cmdDefaultTimeoutMs, cmdDefaultPeriodMs, cmdDefaultDelayMs, CmdOption::RepeatOnReply );
+
+    while( testLoopCnt-- > 0 )
+    {    
+        /* From Idle -> send the comamnd -> goes to witForReply. */   
+        ctrlPingPong.manager();
+
+        /* Load the reply. */   
+        ctrlPingPong.loadReply( nullptr, CmdType::cmd2, CmdType::noCmd, PrioLevel::high, TEST_TOKEN, cmdDefaultRetryNr, cmdDefaultTimeoutMs, cmdDefaultPeriodMs, cmdDefaultDelayMs );
+ 
+        ++replyCnt;
+           
+        /* Reply received -> goes to Done. */ 
+        ctrlPingPong.manager(); 
+
+        /* From DOne -> goes to Idle*/
+        ctrlPingPong.manager();
+
+        CHECK_EQUAL( 1, ctrlPingPong.getCmdCnt() );
+        CHECK_EQUAL( replyCnt, cmdPing.getReplyCnt() );
+    }
 }
-*/

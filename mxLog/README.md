@@ -1,6 +1,6 @@
 ## mxLog
 
-This is a light-weight logging with deferenced output stream done in background.
+This is a light-weight logging with deferenced output streamed in background.
 Compile-time format string const evaluated.
 Restrictions:
   - Only 1 parameter allowed for log function call.
